@@ -13,7 +13,7 @@ offset_z = 0
 
 for y in range(height):
     for x in range(width):
-        color = image[y, x]
+        color = image[y, width - x - 1]
         
         color_index = find_similar_color(color[2], color[1], color[0])
 
