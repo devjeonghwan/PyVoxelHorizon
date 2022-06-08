@@ -264,8 +264,8 @@ class VoxelObject:
         self.set_voxel_raw(x, y, z, value)
 
     def set_voxel_raw(self, x, y, z, value):
-        index = int(x + z * self.width_depth_height + y *
-                    math.pow(self.width_depth_height, 2))
+        index = int(x + (z * self.width_depth_height) +
+                    (y * self.width_depth_height * self.width_depth_height))
 
         byte_index = int(index / 8.)
         bit_index = index - (byte_index * 8)
@@ -284,8 +284,8 @@ class VoxelObject:
         return self.get_voxel_raw(x, y, z)
 
     def get_voxel_raw(self, x, y, z):
-        index = int(x + z * self.width_depth_height + y *
-                    math.pow(self.width_depth_height, 2))
+        index = int(x + (z * self.width_depth_height) +
+                    (y * self.width_depth_height * self.width_depth_height))
 
         byte_index = int(index / 8.)
         bit_index = index - (byte_index * 8)
@@ -299,8 +299,8 @@ class VoxelObject:
         self.set_voxel_color_raw(x, y, z, value)
 
     def set_voxel_color_raw(self, x, y, z, value):
-        index = int(x + z * self.width_depth_height + y *
-                    math.pow(self.width_depth_height, 2))
+        index = int(x + (z * self.width_depth_height) +
+                    (y * self.width_depth_height * self.width_depth_height))
 
         self.color_table[index] = value
 
@@ -311,8 +311,8 @@ class VoxelObject:
         return self.get_voxel_color_raw(x, y, z)
 
     def get_voxel_color_raw(self, x, y, z):
-        index = int(x + z * self.width_depth_height + y *
-                    math.pow(self.width_depth_height, 2))
+        index = int(x + (z * self.width_depth_height) +
+                    (y * self.width_depth_height * self.width_depth_height))
 
         return self.color_table[index]
 
@@ -332,7 +332,14 @@ class VoxelObject:
             width_depth_height_n = get_lsb_number(self.width_depth_height)
             color_table_size = len(self.color_table)
             voxel_data = self.voxel_data
-            color_table = self.color_table
+            color_table = bytes()
+            
+            for x in range(self.width_depth_height):
+                for y in range(self.width_depth_height):
+                    for z in range(self.width_depth_height):
+                        if self.get_voxel_raw(x, y, z):
+                            color_table += struct.pack("B", self.get_voxel_color_raw(x, y, z))
+
 
         # Write Compressed
         if compress:
