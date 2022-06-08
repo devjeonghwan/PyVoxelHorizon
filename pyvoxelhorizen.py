@@ -1,5 +1,6 @@
 import struct
 import math
+from threading import local
 
 VH_WIDTH_DEPTH_HEIGHT_2BITS = 0b11
 VH_PROPERTY_2BITS = 0b1100
@@ -333,13 +334,13 @@ class VoxelObject:
             color_table_size = len(self.color_table)
             voxel_data = self.voxel_data
             color_table = bytes()
-            
+
             for x in range(self.width_depth_height):
                 for y in range(self.width_depth_height):
                     for z in range(self.width_depth_height):
                         if self.get_voxel_raw(x, y, z):
-                            color_table += struct.pack("B", self.get_voxel_color_raw(x, y, z))
-
+                            color_table += struct.pack("B",
+                                                       self.get_voxel_color_raw(x, y, z))
 
         # Write Compressed
         if compress:
@@ -431,11 +432,23 @@ class VoxelObject:
         # Read Color Table Data
         if not color_table_compressed:
             color_table = bytes[offset:offset + color_table_size]
-            if len(color_table) == 1:
-                for i in range(len(instance.color_table)):
-                    instance.color_table[0] = color_table[0]
+            
+            if len(color_table) != math.pow(instance.width_depth_height, 3):
+                local_index = 0
+                for y in range(instance.width_depth_height):
+                    for z in range(instance.width_depth_height):
+                        for x in range(instance.width_depth_height):
+                            if instance.get_voxel_raw(x, y, z):
+                                instance.set_voxel_color_raw(x, y, z, color_table[local_index])
+                                local_index += 1
+                            else:
+                                instance.set_voxel_color_raw(x, y, z, 0)
+                
+                if len(color_table) != local_index:
+                    raise ValueError("Unexpected color table structure.")
             else:
                 instance.color_table = color_table
+
         offset += color_table_size
 
         return instance
