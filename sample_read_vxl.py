@@ -1,7 +1,7 @@
 import cv2
 from pyvoxelhorizen import *
 
-voxel_file = VoxelFile.from_file("in.vxl")
+voxel_file = VoxelFile.from_file("datas/dungeon_small.vxl")
 
 for object in voxel_file.objects:
     print(object)

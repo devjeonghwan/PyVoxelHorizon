@@ -1,7 +1,7 @@
 import cv2
 from pyvoxelhorizen import *
 
-image = cv2.imread("input.png")
+image = cv2.imread("datas/image.png")
 height, width, _ = image.shape
 
 voxel_file = VoxelFile()
@@ -26,6 +26,6 @@ for y in range(height):
         object.set_voxel(local_x, 0, local_z, True)
         object.set_voxel_color(local_x, 0, local_z, color_index)
 
-file = open("out.vxl", "wb")
+file = open("datas/output.vxl", "wb")
 file.write(voxel_file.to_bytes())
 file.close()

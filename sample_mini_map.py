@@ -5,7 +5,7 @@ from pyvoxelhorizen import *
 
 import pymeow
 
-voxel_file = VoxelFile.from_file("big.vxl")
+voxel_file = VoxelFile.from_file("datas/dungeon_small.vxl")
 
 min_x = 99999999
 min_y = 99999999
@@ -180,6 +180,5 @@ while process is not None:
         cv2.imshow("MAP", canvas)
         cv2.waitKey(10)
     except Exception as e:
-        print(e)
         print("Waiting for join map..")
         sleep(1)
