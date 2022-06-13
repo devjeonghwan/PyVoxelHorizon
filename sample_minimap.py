@@ -1,7 +1,7 @@
 from time import sleep
 import cv2
 import numpy
-from pyvoxelhorizen import *
+from pyvoxelhorizon import *
 
 import pymeow
 

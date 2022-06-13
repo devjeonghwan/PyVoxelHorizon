@@ -1,5 +1,5 @@
 import cv2
-from pyvoxelhorizen import *
+from pyvoxelhorizon import *
 
 image = cv2.imread("datas/image.png")
 height, width, _ = image.shape

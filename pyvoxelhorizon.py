@@ -1,6 +1,5 @@
 import struct
 import math
-from threading import local
 
 VH_WIDTH_DEPTH_HEIGHT_2BITS = 0b11
 VH_PROPERTY_2BITS = 0b1100
@@ -538,13 +537,14 @@ class VoxelFile:
         return self.append_object(object)
 
     def to_bytes(self, compress=False):
+        objects = self.get_objects()
         data = bytes()
 
         # Write Version
         data += int.to_bytes(VH_VOXEL_FILE_VERSION, 4, 'little', signed=False)
 
         # Write Object Count
-        data += int.to_bytes(len(self.objects), 4, 'little', signed=False)
+        data += int.to_bytes(len(objects), 4, 'little', signed=False)
 
         # Write Light Count
         data += int.to_bytes(0, 4, 'little', signed=False)
@@ -556,7 +556,7 @@ class VoxelFile:
         data += bytes(4 * 15)
 
         stream_data = bytes()
-        for object in self.get_objects():
+        for object in objects:
             object_data = object.to_bytes(compress)
 
             # Write Object Size

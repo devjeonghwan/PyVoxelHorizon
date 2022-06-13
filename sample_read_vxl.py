@@ -1,9 +1,9 @@
 import cv2
-from pyvoxelhorizen import *
+from pyvoxelhorizon import *
 
-voxel_file = VoxelFile.from_file("datas/dungeon_small.vxl")
+voxel_file = VoxelFile.from_file("datas/output.vxl")
 
-for object in voxel_file.objects:
+for object in voxel_file.get_objects():
     print(object)
     for y in range(object.width_depth_height):
         for z in range(object.width_depth_height):
