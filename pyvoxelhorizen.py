@@ -331,7 +331,7 @@ class VoxelObject:
         # Prepare Object Data
         if not compress:
             width_depth_height_n = get_lsb_number(self.width_depth_height)
-            color_table_size = len(self.color_table)
+            color_table_size = 0
             voxel_data = self.voxel_data
             color_table = bytes()
 
@@ -339,8 +339,8 @@ class VoxelObject:
                 for y in range(self.width_depth_height):
                     for z in range(self.width_depth_height):
                         if self.get_voxel_raw(x, y, z):
-                            color_table += struct.pack("B",
-                                                       self.get_voxel_color_raw(x, y, z))
+                            color_table += struct.pack("B", self.get_voxel_color_raw(x, y, z))
+                            color_table_size += 1
 
         # Write Compressed
         if compress:
@@ -403,8 +403,9 @@ class VoxelObject:
         if color_table_compressed:
             print("Currently not support decompress color table, skip color data of {0} object.".format(
                 instance.position.__dict__))
-            for i in range(512):
-                instance.color_table[i] = 1
+
+            for i in range(int(math.pow(width_depth_height, 3))):
+                instance.color_table[i] = 15
             # raise ValueError("Currently not support decompress color table.")
 
         if geometry_compressed:
@@ -425,8 +426,7 @@ class VoxelObject:
 
         # Read Geometry Data
         if not geometry_compressed:
-            instance.voxel_data = bytearray(
-                bytes[offset:offset + voxel_data_size])
+            instance.voxel_data = bytearray(bytes[offset:offset + voxel_data_size])
         offset += voxel_data_size
 
         # Read Color Table Data
@@ -443,7 +443,7 @@ class VoxelObject:
                                 local_index += 1
                             else:
                                 instance.set_voxel_color_raw(x, y, z, 0)
-                
+
                 if len(color_table) != local_index:
                     raise ValueError("Unexpected color table structure.")
             else:
@@ -467,7 +467,7 @@ class VoxelFile:
     def __init__(self):
         self.white_point = float()
         # Make linear data structure to hash data structure for optimization.
-        self.objects = []
+        self.object_map = {}
 
     def __getitem__(self, position):
         x, y, z = position
@@ -479,26 +479,63 @@ class VoxelFile:
 
         return self.create_object(x, y, z)
 
+    def get_objects(self):
+        objects = []
+
+        for k, x_map in self.object_map.items():
+            for k, y_map in x_map.items():
+                for k, object in y_map.items():
+                    objects.append(object)
+        
+        return objects
+
     def get_object(self, x, y, z):
-        for object in self.objects:
-            if object.position.x == x and object.position.y == y and object.position.z == z:
-                return object
+        map = self.object_map
 
-        return None
+        if x not in map:
+            return None
+        map = map[x]
 
-    def create_object(self, x, y, z):
+        if y not in map:
+            return None
+        map = map[y]
+
+        if z not in map:
+            return None
+                
+        return map[z]
+
+    def append_object(self, object):
+        x = object.position.x
+        y = object.position.y
+        z = object.position.z
+
         if self.get_object(x, y, z) != None:
             raise ValueError(
                 "Already exists object of {0}, {1}, {2}.", x, y, z)
+        
+        map = self.object_map
 
+        if x not in map:
+            map[x] = {}
+        map = map[x]
+
+        if y not in map:
+            map[y] = {}
+        map = map[y]
+
+        map[z] = object
+
+        return object
+
+    def create_object(self, x, y, z):
         object = VoxelObject()
+
         object.position.x = x
         object.position.y = y
         object.position.z = z
 
-        self.objects.append(object)
-
-        return object
+        return self.append_object(object)
 
     def to_bytes(self, compress=False):
         data = bytes()
@@ -519,7 +556,7 @@ class VoxelFile:
         data += bytes(4 * 15)
 
         stream_data = bytes()
-        for object in self.objects:
+        for object in self.get_objects():
             object_data = object.to_bytes(compress)
 
             # Write Object Size
@@ -588,7 +625,7 @@ class VoxelFile:
             # Read Object Data
             object = VoxelObject.from_bytes(bytes, offset)
 
-            instance.objects.append(object)
+            instance.append_object(object)
             offset += object_size
 
         return instance
