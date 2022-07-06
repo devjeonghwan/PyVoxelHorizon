@@ -23,7 +23,7 @@ class Color:
             rgb = (None, None, None)
 
         if description is None:
-            description = "RGB(" + rgb + ")"
+            description = "RGB(" + str(rgb) + ")"
             
         self.red = rgb[0]
         self.green = rgb[1]
