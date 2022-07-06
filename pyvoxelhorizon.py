@@ -376,9 +376,9 @@ class VoxelObject:
             voxel_data = self.voxel_data
             color_table = bytes()
 
-            for x in range(self.width_depth_height):
-                for y in range(self.width_depth_height):
-                    for z in range(self.width_depth_height):
+            for y in range(self.width_depth_height):
+                for z in range(self.width_depth_height):
+                    for x in range(self.width_depth_height):
                         if self.get_voxel_raw(x, y, z):
                             color_table += struct.pack("B", self.get_voxel_color_raw(x, y, z))
                             color_table_size += 1
