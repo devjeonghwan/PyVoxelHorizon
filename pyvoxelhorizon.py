@@ -295,6 +295,15 @@ class VoxelObject:
             old_voxel_data = None
             old_color_table = None
 
+    def is_empty(self):
+        for z in range(self.width_depth_height):
+            for y in range(self.width_depth_height):
+                for x in range(self.width_depth_height):
+                    if self.get_voxel_raw(x, y, z):
+                        return False
+        
+        return True
+
     def get_voxel_data_size(self):
         voxel_full_count = math.pow(self.width_depth_height, 3)
         return int(voxel_full_count / 8 + (voxel_full_count % 8 != 0))
@@ -579,7 +588,9 @@ class VoxelFile:
         return self.append_object(object)
 
     def to_bytes(self, compress=False):
-        objects = self.get_objects()
+        dirty_objects = self.get_objects()
+        objects = [object for object in dirty_objects if object.is_empty()]
+        
         data = bytes()
 
         # Write Version
@@ -602,8 +613,7 @@ class VoxelFile:
             object_data = object.to_bytes(compress)
 
             # Write Object Size
-            stream_data += int.to_bytes(len(object_data),
-                                        4, 'little', signed=False)
+            stream_data += int.to_bytes(len(object_data), 4, 'little', signed=False)
 
             # Write Object Data
             stream_data += object_data
