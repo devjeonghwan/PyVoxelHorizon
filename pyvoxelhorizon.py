@@ -20,16 +20,15 @@ class Color:
         self.id = id
 
         if rgb is None:
-            rgb = (None, None, None)
+            self.rgb = None
+        else:
+            self.rgb = rgb
 
         if description is None:
-            description = "RGB(" + str(rgb) + ")"
-            
-        self.red = rgb[0]
-        self.green = rgb[1]
-        self.blue = rgb[2]
+            description = "RGB(" + str(self.rgb) + ")"
 
         self.description = description
+
 
 VH_COLORS = [
     Color(0, rgb=(71, 45, 60)),
@@ -97,10 +96,11 @@ VH_COLORS = [
     Color(59, description="Mat Rock2"),
     Color(60, description="Mat Rock3"),
     Color(61, description="Mat Check"),
-    
+
     Color(62, description="Shining Check1"),
     Color(63, description="Shining Check2")
 ]
+
 
 def find_similar_color(red, green, blue):
     find_distance = 255 * 255 * 255
@@ -108,14 +108,17 @@ def find_similar_color(red, green, blue):
 
     for index in range(len(VH_COLORS)):
         color = VH_COLORS[index]
-        distance = (abs(color.red - red) + abs(color.green -
-                    green) + abs(color.blue - blue)) / 3
 
-        if find_distance > distance:
-            find_distance = distance
-            find_id = color.id
+        if color.rgb != None:
+            distance = (abs(
+                color.rgb[0] - red) + abs(color.rgb[1] - green) + abs(color.rgb[2] - blue)) / 3
+
+            if find_distance > distance:
+                find_distance = distance
+                find_id = color.id
 
     return find_id
+
 
 def get_lsb_number(n):
     count = 0
@@ -301,7 +304,7 @@ class VoxelObject:
                 for x in range(self.width_depth_height):
                     if self.get_voxel_raw(x, y, z):
                         return False
-        
+
         return True
 
     def get_voxel_data_size(self):
@@ -389,7 +392,8 @@ class VoxelObject:
                 for z in range(self.width_depth_height):
                     for x in range(self.width_depth_height):
                         if self.get_voxel_raw(x, y, z):
-                            color_table += struct.pack("B", self.get_voxel_color_raw(x, y, z))
+                            color_table += struct.pack("B",
+                                                       self.get_voxel_color_raw(x, y, z))
                             color_table_size += 1
 
         # Write Compressed
@@ -462,8 +466,7 @@ class VoxelObject:
             raise ValueError("Currently not support decompress voxel data.")
 
         # Read Destroyable
-        instance.destroyable = (
-            (props & VH_PROPERTY_DESTROYABLE_1BITS) >> 2) != 0
+        instance.destroyable = ((props & VH_PROPERTY_DESTROYABLE_1BITS) >> 2) != 0
 
         # Read Owner Serial
         instance.owner_serial = int.from_bytes(
@@ -476,20 +479,22 @@ class VoxelObject:
 
         # Read Geometry Data
         if not geometry_compressed:
-            instance.voxel_data = bytearray(bytes[offset:offset + voxel_data_size])
+            instance.voxel_data = bytearray(
+                bytes[offset:offset + voxel_data_size])
         offset += voxel_data_size
 
         # Read Color Table Data
         if not color_table_compressed:
             color_table = bytes[offset:offset + color_table_size]
-            
+
             if len(color_table) != math.pow(instance.width_depth_height, 3):
                 local_index = 0
                 for y in range(instance.width_depth_height):
                     for z in range(instance.width_depth_height):
                         for x in range(instance.width_depth_height):
                             if instance.get_voxel_raw(x, y, z):
-                                instance.set_voxel_color_raw(x, y, z, color_table[local_index])
+                                instance.set_voxel_color_raw(
+                                    x, y, z, color_table[local_index])
                                 local_index += 1
                             else:
                                 instance.set_voxel_color_raw(x, y, z, 0)
@@ -536,7 +541,7 @@ class VoxelFile:
             for k, y_map in x_map.items():
                 for k, object in y_map.items():
                     objects.append(object)
-        
+
         return objects
 
     def get_object(self, x, y, z):
@@ -552,7 +557,7 @@ class VoxelFile:
 
         if z not in map:
             return None
-                
+
         return map[z]
 
     def append_object(self, object):
@@ -563,7 +568,7 @@ class VoxelFile:
         if self.get_object(x, y, z) != None:
             raise ValueError(
                 "Already exists object of {0}, {1}, {2}.", x, y, z)
-        
+
         map = self.object_map
 
         if x not in map:
@@ -589,8 +594,8 @@ class VoxelFile:
 
     def to_bytes(self, compress=False):
         dirty_objects = self.get_objects()
-        objects = [object for object in dirty_objects if object.is_empty()]
-        
+        objects = [object for object in dirty_objects if not object.is_empty()]
+
         data = bytes()
 
         # Write Version
@@ -613,7 +618,8 @@ class VoxelFile:
             object_data = object.to_bytes(compress)
 
             # Write Object Size
-            stream_data += int.to_bytes(len(object_data), 4, 'little', signed=False)
+            stream_data += int.to_bytes(len(object_data),
+                                        4, 'little', signed=False)
 
             # Write Object Data
             stream_data += object_data
