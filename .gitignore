@@ -2,7 +2,20 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
 
-datas/output.vxl
+frames/*
+pyvoxelhorizon/*.dll
+
+/windows/PyVoxelHorizonBridge/.vs
+
+/windows/PyVoxelHorizonBridge/x64/Debug
+/windows/PyVoxelHorizonBridge/x64/Release
+/windows/PyVoxelHorizonBridge/x86/Debug
+/windows/PyVoxelHorizonBridge/x86/Release
+/windows/PyVoxelHorizonBridge/PyVoxelHorizonBridge/x64/Debug
+/windows/PyVoxelHorizonBridge/PyVoxelHorizonBridge/x64/Release
+/windows/PyVoxelHorizonBridge/PyVoxelHorizonBridge/x86/Debug
+/windows/PyVoxelHorizonBridge/PyVoxelHorizonBridge/x86/Release
+
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
