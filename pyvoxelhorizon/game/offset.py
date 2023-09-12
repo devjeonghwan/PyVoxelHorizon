@@ -1,6 +1,8 @@
+# for 20230906 Build 33
+
 GLOBAL_OFFSET = {
     'STATIC': {
-        'GAME': 0x00140148
+        'GAME': 0x00142158
     }
 }
 

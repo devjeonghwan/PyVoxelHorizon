@@ -8,9 +8,10 @@
 
 #define MODULE_NAME                             "Client_x64_release.exe"     // Name of process and module
 
+// for 20230906 Build 33
 #define PATCH_SIZE                              15
-#define OFFSET_GLOBAL_CGAME                     (0x0140148)                  // CGame
-#define OFFSET_CODE_CALL_GEOMETRY_PRESENT       (0x005C436)                  // `MOV RCX,qword ptr [RDI + 0xd0]` ~ `CALL qword ptr [RAX + 0x68]` in CGame::Run
+#define OFFSET_GLOBAL_CGAME                     (0x0142158)                  // CGame
+#define OFFSET_CODE_CALL_GEOMETRY_PRESENT       (0x005CF55)                  // `MOV RCX,qword ptr [RDI + 0xd0]` ~ `CALL qword ptr [RAX + 0x68]` in CGame::Run
 #define OFFSET_MEMBER_GEOMETRY                  (0x00000D0)                  // Offset of member m_pGeometry in CGame
 #define OFFSET_FUNCTION_GEOMETRY_PRESENT        (0x0000068)                  // Function offset
 
