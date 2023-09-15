@@ -10,7 +10,7 @@ from .game_context import GameContext
 
 from .battle_scene import BattleScene
 
-from .voxel_object_manager import VoxelObjectManager, CreateVoxelObjectResult
+from .voxel_object_manager import VoxelObjectManager, CreateVoxelObjectResult, align_vector3_to_voxel_object, align_coord_to_voxel_object
 
 from .voxel_object import VoxelObject, VoxelObjectProperty
 
@@ -27,6 +27,8 @@ __all__ = [
     
     "VoxelObjectManager",
     "CreateVoxelObjectResult",
+    "align_vector3_to_voxel_object",
+    "align_coord_to_voxel_object",
 
     "VoxelObject",
     "VoxelObjectProperty"
