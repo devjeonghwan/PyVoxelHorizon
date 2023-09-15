@@ -1,5 +1,7 @@
-import pyvoxelhorizon
+from voxel_horizon_plugin import VoxelHorizonPlugin
 from pyvoxelhorizon.game.object import *
+
+import pyvoxelhorizon
 
 import sys
 import os
@@ -7,14 +9,21 @@ import importlib
 import ctypes
 
 class PyVoxelHorizon:
-    def __init__(self, working_directory):
-        # Setup Fields
-        self.client_context = None
-        self.working_directory = working_directory
-        self.plugins = []
+    client_context      : ClientContext             = None
+    game_context        : GameContext               = None
+    working_directory   : str                       = None
+    plugins             : list[VoxelHorizonPlugin]  = []
 
-    def on_initialize(self, module_address, game_object_address):
-        self.client_context = ClientContext(module_address)
+    def __init__(self, working_directory: str):
+        self.working_directory = working_directory
+
+    def on_initialize(self, module_address: int, game_object_address: int):
+        self.client_context = get_client_context(module_address)
+        self.game_context = get_game_context(self.client_context)
+
+        if self.game_context is None:
+            print("Cannot find `CGame` instance in memory.")
+            exit()
 
         self.game_object_address = game_object_address
 
@@ -32,13 +41,11 @@ class PyVoxelHorizon:
                 self.plugins.append(getattr(module, plugin_name)(self.working_directory))
        
         for plugin in self.plugins:
-            plugin.on_initialize(self.client_context)
+            plugin.on_initialize(self.game_context)
 
     def on_loop(self):
-        game_object = self.client_context.get_game()
-
         for plugin in self.plugins:
-            plugin.on_loop(game_object)
+            plugin.update(self.game_context)
         
     def on_stop(self):
         for plugin in self.plugins:

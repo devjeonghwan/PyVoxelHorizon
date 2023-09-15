@@ -69,7 +69,9 @@ void Exit(int code)
                 Py_DECREF(pythonVoxelHorizon);
             }
 
-            Py_Finalize();
+            // Comment out code for avoiding complicate thread model of Python
+            // Py_Finalize();
+
         }
     }
 
@@ -223,7 +225,7 @@ void ExecutePythonOnStop()
     {
         return;
     }
-
+    
     PyObject* pythonArgument = PyTuple_Pack(0);
     PyObject* pythonReturnValue = PyObject_CallObject(pythonVoxelHorizonOnStop, pythonArgument);
 
@@ -351,7 +353,7 @@ __declspec(dllexport) void InitializeBridge(void* arguments)
     scriptFileName[convertedSize] = '\0';
 
     Py_Initialize();
-    
+
     PyObject* pythonSysModule = PyImport_ImportModule("sys");
 
     if (pythonSysModule == NULL)
