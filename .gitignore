@@ -9,7 +9,6 @@ frames/*
 frames
 
 pyvoxelhorizon/*.dll
-pyvoxelhorizon
 
 /windows/PyVoxelHorizonBridge/.vs
 /windows/PyVoxelHorizonBridge/x64/Debug
