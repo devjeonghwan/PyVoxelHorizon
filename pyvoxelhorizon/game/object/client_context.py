@@ -1,6 +1,7 @@
 from pyvoxelhorizon.game.offset import *
 from pyvoxelhorizon.game.util import *
 
+import ctypes
 import ctypes.wintypes as wintypes
 import struct
 

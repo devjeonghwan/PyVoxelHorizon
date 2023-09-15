@@ -1,19 +1,19 @@
-from pyvoxelhorizon.game.object import GameContext
 from voxel_horizon_plugin import VoxelHorizonPlugin
 from pyvoxelhorizon.game.object import *
+from pyvoxelhorizon.game.helper import VoxelEditor
 
 PLUGIN_NAME     = "TestPlugin"
 
 class TestPlugin(VoxelHorizonPlugin):
     def on_initialize(self, game_context: GameContext):
         print("Load!")
+        self.current_count = 0
 
     def on_update(self, game_context: GameContext):
         print("Update!")
 
     def on_mouse_right_click(self, game_context: GameContext):
-        game_context.write_text(0xff0000ff, "Blue Console Message!\n")
-
+        # game_context.write_text(0xff0000ff, "Blue Console Message!\n")
         battle_scene = game_context.get_battle_scene()
 
         if not battle_scene:
@@ -23,102 +23,109 @@ class TestPlugin(VoxelHorizonPlugin):
 
         if not voxel_object_manager:
             return
-
-        VOXEL_OBJECT_SIZE = 400
         
+        voxel_editor = VoxelEditor(voxel_object_manager)
+
+        return_value = voxel_editor.set_voxel(200 - (self.current_count * 50), -1600, 200, 0x02)
+        # game_context.write_text(0xffffffff, "Ret: " + str(return_value) + "\n")
         
-        v3Pos = Vector3()
-        v3Pos.x = 200
-        v3Pos.y = -2200
-        v3Pos.z = 200
+        self.current_count += 1
+
+        voxel_editor.finish()
 
 
-        result = voxel_object_manager.create_voxel_object(v3Pos, 8, 0xffffffff)
-        voxel_object = result.voxel_object
+        # v3Pos = Vector3()
+        # v3Pos.x = 200
+        # v3Pos.y = -2200
+        # v3Pos.z = 200
 
-        if not voxel_object:
-            game_context.write_text(0xffffffff, "Failed to create object. " + str(result.get_meesage()) + "\n")
-            return
+
+        # result = voxel_object_manager.create_voxel_object(v3Pos, 8, 0xffffffff)
+        # voxel_object = result.voxel_object
+
+        # if not voxel_object:
+        #     
+        #     return
         
-        voxel_object.set_palette_with_indexed_color(15)
-        voxel_object.update_geometry(False)
-        voxel_object.update_lighting()
-        voxel_object.set_destroyable(True)
-        v3Pos.x += VOXEL_OBJECT_SIZE
+        # voxel_object.set_palette_with_indexed_color(15)
+        # voxel_object.update_geometry(False)
+        # voxel_object.update_lighting()
+        # voxel_object.set_destroyable(True)
+        # v3Pos.x += VOXEL_OBJECT_SIZE
 
 
-        result = voxel_object_manager.create_voxel_object(v3Pos, 8, 0xffffffff)
-        voxel_object = result.voxel_object
+        # result = voxel_object_manager.create_voxel_object(v3Pos, 8, 0xffffffff)
+        # voxel_object = result.voxel_object
 
-        if not voxel_object:
-            game_context.write_text(0xffffffff, "Failed to create object. " + str(result.get_meesage()) + "\n")
-            return
+        # if not voxel_object:
+        #     game_context.write_text(0xffffffff, "Failed to create object. " + str(result.get_meesage()) + "\n")
+        #     return
         
-        voxel_object.set_palette_with_indexed_color(3)
-        voxel_object.update_geometry(False)
-        voxel_object.update_lighting()
-        voxel_object.set_destroyable(True)
-        v3Pos.x += VOXEL_OBJECT_SIZE
+        # voxel_object.set_palette_with_indexed_color(3)
+        # voxel_object.update_geometry(False)
+        # voxel_object.update_lighting()
+        # voxel_object.set_destroyable(True)
+        # v3Pos.x += VOXEL_OBJECT_SIZE
 
 
-        result = voxel_object_manager.create_voxel_object(v3Pos, 4, 0xffffffff)
-        voxel_object = result.voxel_object
+        # result = voxel_object_manager.create_voxel_object(v3Pos, 4, 0xffffffff)
+        # voxel_object = result.voxel_object
 
-        if not voxel_object:
-            game_context.write_text(0xffffffff, "Failed to create object. " + str(result.get_meesage()) + "\n")
-            return
+        # if not voxel_object:
+        #     game_context.write_text(0xffffffff, "Failed to create object. " + str(result.get_meesage()) + "\n")
+        #     return
         
-        voxel_object.set_palette_with_indexed_color(5)
-        voxel_object.update_geometry(False)
-        voxel_object.update_lighting()
-        voxel_object.set_destroyable(True)
-        v3Pos.x += VOXEL_OBJECT_SIZE
+        # voxel_object.set_palette_with_indexed_color(5)
+        # voxel_object.update_geometry(False)
+        # voxel_object.update_lighting()
+        # voxel_object.set_destroyable(True)
+        # v3Pos.x += VOXEL_OBJECT_SIZE
 
 
-        result = voxel_object_manager.create_voxel_object(v3Pos, 2, 0xffffffff)
-        voxel_object = result.voxel_object
+        # result = voxel_object_manager.create_voxel_object(v3Pos, 2, 0xffffffff)
+        # voxel_object = result.voxel_object
 
-        if not voxel_object:
-            game_context.write_text(0xffffffff, "Failed to create object. " + str(result.get_meesage()) + "\n")
-            return
+        # if not voxel_object:
+        #     game_context.write_text(0xffffffff, "Failed to create object. " + str(result.get_meesage()) + "\n")
+        #     return
         
-        voxel_object.set_palette_with_indexed_color(7)
-        voxel_object.update_geometry(False)
-        voxel_object.update_lighting()
-        voxel_object.set_destroyable(True)
-        v3Pos.x += VOXEL_OBJECT_SIZE
+        # voxel_object.set_palette_with_indexed_color(7)
+        # voxel_object.update_geometry(False)
+        # voxel_object.update_lighting()
+        # voxel_object.set_destroyable(True)
+        # v3Pos.x += VOXEL_OBJECT_SIZE
 
 
-        result = voxel_object_manager.create_voxel_object(v3Pos, 1, 0xffffffff)
-        voxel_object = result.voxel_object
+        # result = voxel_object_manager.create_voxel_object(v3Pos, 1, 0xffffffff)
+        # voxel_object = result.voxel_object
 
-        if not voxel_object:
-            game_context.write_text(0xffffffff, "Failed to create object. " + str(result.get_meesage()) + "\n")
-            return
+        # if not voxel_object:
+        #     game_context.write_text(0xffffffff, "Failed to create object. " + str(result.get_meesage()) + "\n")
+        #     return
         
-        voxel_object.set_palette_with_indexed_color(9)
-        voxel_object.update_geometry(False)
-        voxel_object.update_lighting()
-        voxel_object.set_destroyable(True)
-        v3Pos.x += VOXEL_OBJECT_SIZE
+        # voxel_object.set_palette_with_indexed_color(9)
+        # voxel_object.update_geometry(False)
+        # voxel_object.update_lighting()
+        # voxel_object.set_destroyable(True)
+        # v3Pos.x += VOXEL_OBJECT_SIZE
 
 
-        result = voxel_object_manager.create_voxel_object(v3Pos, 8, 0xffffffff)
-        voxel_object = result.voxel_object
+        # result = voxel_object_manager.create_voxel_object(v3Pos, 8, 0xffffffff)
+        # voxel_object = result.voxel_object
 
-        if not voxel_object:
-            game_context.write_text(0xffffffff, "Failed to create object. " + str(result.get_meesage()) + "\n")
-            return
+        # if not voxel_object:
+        #     game_context.write_text(0xffffffff, "Failed to create object. " + str(result.get_meesage()) + "\n")
+        #     return
         
-        voxel_object.set_palette_with_indexed_color(11)
-        voxel_object.update_geometry(False)
-        voxel_object.update_lighting()
-        voxel_object.set_destroyable(True)
-        v3Pos.x += VOXEL_OBJECT_SIZE
+        # voxel_object.set_palette_with_indexed_color(11)
+        # voxel_object.update_geometry(False)
+        # voxel_object.update_lighting()
+        # voxel_object.set_destroyable(True)
+        # v3Pos.x += VOXEL_OBJECT_SIZE
 
-        voxel_object_manager.update_visibility()
+        # voxel_object_manager.update_visibility()
         
-        game_context.write_text(0xffffffff, "Is Destoryable " + str(voxel_object.is_destroyable()) + "\n")
+        # game_context.write_text(0xffffffff, "Is Destoryable " + str(voxel_object.is_destroyable()) + "\n")
 
 
 

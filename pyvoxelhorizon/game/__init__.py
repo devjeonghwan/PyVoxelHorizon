@@ -1,5 +1,5 @@
 from .object import *
 from .offset import *
-from .util import read_pointer_chain, read_memory
+from .util import *
 
 __all__ = ['object']

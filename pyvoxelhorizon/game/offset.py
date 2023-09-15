@@ -80,6 +80,7 @@ VOXEL_OBJECT_OFFSET = {
                 "GET_VOXEL"                         : 0x000000C0,
                 "ADD_VOXEL_WITH_AUTO_RESIZE"        : 0x000000F0,
                 "REMOVE_VOXEL_WITH_AUTO_RESIZE"     : 0x000000F8,
+                "CLEAR_AND_ADD_VOXEL"               : 0x000000E8,
 
                 "SET_VOXEL_COLOR_WITH_AUTO_RESIZE"  : 0x00000108,
                 "SET_PALETTE_WITH_INDEXED_COLOR"    : 0x00000148,
