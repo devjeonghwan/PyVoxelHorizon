@@ -20,7 +20,9 @@ GAME_OFFSET = {
 
         'MOUSE_LEFT_BUTTON_DOWN'        : 0x00000BE0,
         'MOUSE_MIDDLE_BUTTON_DOWN'      : 0x00000BE4,
-        'MOUSE_RIGHT_BUTTON_DOWN'       : 0x00000BE8
+        'MOUSE_RIGHT_BUTTON_DOWN'       : 0x00000BE8,
+
+        'VOXEL_EDITOR'                  : 0x000007E0,
     },
     'FUNCTION': {
 

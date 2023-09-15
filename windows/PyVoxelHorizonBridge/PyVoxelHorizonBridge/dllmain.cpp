@@ -9,11 +9,16 @@
 #define MODULE_NAME                             "Client_x64_release.exe"     // Name of process and module
 
 // for 20230906 Build 33
-#define PATCH_SIZE                              15
-#define OFFSET_GLOBAL_CGAME                     (0x0142158)                  // CGame
-#define OFFSET_CODE_CALL_GEOMETRY_PRESENT       (0x005CF55)                  // `MOV RCX,qword ptr [RDI + 0xd0]` ~ `CALL qword ptr [RAX + 0x68]` in CGame::Run
-#define OFFSET_MEMBER_GEOMETRY                  (0x00000D0)                  // Offset of member m_pGeometry in CGame
-#define OFFSET_FUNCTION_GEOMETRY_PRESENT        (0x0000068)                  // Function offset
+#define GLOBAL_OFFSET_CGAME                     (0x0142158)                  // CGame
+
+#define CODE_SIZE_CALL_SCENE_RUN_TRUE           13                           // Size of patch code for `OFFSET_CODE_CALL_SCENE_RUN_TRUE`
+#define CODE_OFFSET_CALL_SCENE_RUN_TRUE         (0x005CE14)                  // `MOV this,qword ptr [RDI + 0x628]` ~ `CALL qword ptr [RAX + 0x50]` in CGame::Run with `g_gameOption.bShowEngineInfo == 0`
+
+#define CODE_SIZE_CALL_SCENE_RUN_FALSE          13                           // Size of patch code for `OFFSET_CODE_CALL_SCENE_RUN_FALSE`
+#define CODE_OFFSET_CALL_SCENE_RUN_FALSE        (0x005CDF9)                  // `MOV this,qword ptr [RDI + 0x628]` ~ `CALL qword ptr [RAX + 0x50]` in CGame::Run with `g_gameOption.bShowEngineInfo != 0`
+
+#define MEMBER_OFFSET_SCENE                     (0x0000628)                  // Offset of member m_pScene in CGame
+#define FUNCTION_OFFSET_SCENE_RUN               (0x0000050)                  // Function offset
 
 bool        working                             = true;
 bool        initialized                         = false;
@@ -32,7 +37,7 @@ PyObject*   pythonVoxelHorizonOnStop            = NULL;
 void ExecutePythonOnStop();
 
 typedef unsigned long long PyAddress;
-typedef void FuncGeometryPresent(DWORD64 thisPtr, DWORD64 null);
+typedef void FuncSceneRun(DWORD64 thisPtr);
 
 void Exit(int code)
 {
@@ -149,10 +154,10 @@ void CrashReportForPythonException()
 
 void OnGameLoop()
 {
-    LPBYTE gameObjectPointer = (LPBYTE)(*(DWORD64*)(clientBaseAddress + OFFSET_GLOBAL_CGAME));
-    LPBYTE geometryObjectPointer = (LPBYTE)(*(DWORD64*)(gameObjectPointer + OFFSET_MEMBER_GEOMETRY));
-    LPBYTE geometryObjectFunctionTablePointer = (LPBYTE)(*(DWORD64*)geometryObjectPointer);
-    LPBYTE geometryPresentFunctionPointer = (LPBYTE)(*(DWORD64*)(geometryObjectFunctionTablePointer + OFFSET_FUNCTION_GEOMETRY_PRESENT));
+    LPBYTE gameObjectPointer = (LPBYTE)(*(DWORD64*)(clientBaseAddress + GLOBAL_OFFSET_CGAME));
+    LPBYTE sceneObjectPointer = (LPBYTE)(*(DWORD64*)(gameObjectPointer + MEMBER_OFFSET_SCENE));
+    LPBYTE sceneObjectFunctionTablePointer = (LPBYTE)(*(DWORD64*)sceneObjectPointer);
+    LPBYTE sceneRunFunctionPointer = (LPBYTE)(*(DWORD64*)(sceneObjectFunctionTablePointer + FUNCTION_OFFSET_SCENE_RUN));
 
     if (working)
     {
@@ -166,8 +171,8 @@ void OnGameLoop()
         ExecutePythonOnLoop();
     }
 
-    // Call CGame->m_pGeometry->Present(nullptr);
-    ((FuncGeometryPresent*)geometryPresentFunctionPointer)((DWORD64)geometryObjectPointer, 0);
+    // Call CGame->m_pScene->Run();
+    ((FuncSceneRun*)sceneRunFunctionPointer)((DWORD64)sceneObjectPointer);
 }
 
 void ExecutePythonOnInitialize(void* clientBasePointer, void* gameObjectPointer)
@@ -231,21 +236,8 @@ void ExecutePythonOnStop()
     Py_DECREF(pythonArgument);
 }
 
-bool HookGameLoop()
-{
-    HMODULE moduleHandle;
-    LPBYTE targetAddress;
+bool PatchCode(LPBYTE targetAddress, DWORD64 codeSize) {
     DWORD oldMemoryProtect;
-
-    moduleHandle = GetModuleHandle(TEXT(MODULE_NAME));
-
-    if (moduleHandle == NULL)
-    {
-        return false;
-    }
-
-    clientBaseAddress = (LPBYTE) moduleHandle;
-    targetAddress = clientBaseAddress + OFFSET_CODE_CALL_GEOMETRY_PRESENT;
 
     if (targetAddress == NULL)
     {
@@ -253,7 +245,7 @@ bool HookGameLoop()
     }
 
     // Modify memory protection
-    VirtualProtect((LPVOID)targetAddress, PATCH_SIZE, PAGE_EXECUTE_READWRITE, &oldMemoryProtect);
+    VirtualProtect((LPVOID)targetAddress, codeSize, PAGE_EXECUTE_READWRITE, &oldMemoryProtect);
 
     BYTE codes[] = {
         0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     // MOV RAX, FUNCTION ADDRESS (LONG OP)
@@ -269,13 +261,30 @@ bool HookGameLoop()
     }
 
     // Fill NOP
-    for (int index = sizeof(codes); index < PATCH_SIZE; index++)
+    for (int index = sizeof(codes); index < codeSize; index++)
     {
         *((LPBYTE)targetAddress + index) = 0x90;
     }
 
     // Restore memory protection
-    VirtualProtect(targetAddress, PATCH_SIZE, oldMemoryProtect, &oldMemoryProtect);
+    VirtualProtect(targetAddress, codeSize, oldMemoryProtect, &oldMemoryProtect);
+}
+
+bool HookGameLoop()
+{
+    HMODULE moduleHandle;
+
+    moduleHandle = GetModuleHandle(TEXT(MODULE_NAME));
+
+    if (moduleHandle == NULL)
+    {
+        return false;
+    }
+
+    clientBaseAddress = (LPBYTE) moduleHandle;
+
+    PatchCode(clientBaseAddress + CODE_OFFSET_CALL_SCENE_RUN_TRUE, CODE_SIZE_CALL_SCENE_RUN_TRUE);
+    PatchCode(clientBaseAddress + CODE_OFFSET_CALL_SCENE_RUN_FALSE, CODE_SIZE_CALL_SCENE_RUN_FALSE);
 }
 
 bool GetSimpleFileName(wchar_t* destination, wchar_t* path)
