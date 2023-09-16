@@ -19,6 +19,7 @@ TARGET_Z        = 0
 WIDTH = 100
 HEIGHT = 100
 FRAME_RATE = 12.0
+FRAME_RATE_INTERVAL = 1 / FRAME_RATE
 
 class NESPlugin(VoxelHorizonPlugin):
     def on_initialize(self, game_context: GameContext):
@@ -27,8 +28,7 @@ class NESPlugin(VoxelHorizonPlugin):
         self.nes_env = None
         self.nes_keys = None
         
-        self.start_time = time.time()
-        self.last_index = None
+        self.last_time = time.time()
 
     def on_update(self, game_context: GameContext):
         battle_scene = game_context.get_battle_scene()
@@ -56,10 +56,11 @@ class NESPlugin(VoxelHorizonPlugin):
 
                 return
             
-            index = int((time.time() - self.start_time) * FRAME_RATE)
+            now = time.time()
+            interval = now - self.last_time
 
-            if self.last_index != index:
-                self.last_index = index
+            if interval > FRAME_RATE_INTERVAL:
+                self.last_time = now
 
                 action = self.nes_keys.get(None, 0)
                 
