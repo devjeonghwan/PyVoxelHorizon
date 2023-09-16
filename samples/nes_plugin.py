@@ -18,7 +18,7 @@ TARGET_Z        = 0
 
 WIDTH = 100
 HEIGHT = 100
-FRAME_RATE = 20.0
+FRAME_RATE = 10.0
 FRAME_RATE_INTERVAL = 1 / FRAME_RATE
 
 class NESPlugin(VoxelHorizonPlugin):
@@ -43,19 +43,19 @@ class NESPlugin(VoxelHorizonPlugin):
         
         voxel_editor = VoxelEditor(voxel_object_manager)
         
-        if self.nes_env:
-            if not self.initialized:
-                for w in range(WIDTH):
-                    for h in range(HEIGHT):
-                        _x = int(TARGET_X + (w * 50))
-                        _y = int(TARGET_Y + (h * 50))
-                        _z = int(TARGET_Z)
-        
-                        voxel_editor.add_voxel(_x, _y, _z, get_voxel_color(0))
-                self.initialized = True
+        if not self.initialized:
+            for w in range(WIDTH):
+                for h in range(HEIGHT):
+                    _x = int(TARGET_X + (w * 50))
+                    _y = int(TARGET_Y + (h * 50))
+                    _z = int(TARGET_Z)
+    
+                    voxel_editor.add_voxel(_x, _y, _z, get_voxel_color(0))
+            self.initialized = True
 
-                return
-            
+            return
+        
+        if self.nes_env:
             now = time.time()
             interval = now - self.last_time
 
@@ -86,6 +86,8 @@ class NESPlugin(VoxelHorizonPlugin):
                 action = self.nes_keys.get(tuple(key_list), 0)
 
                 state, reward, done, info = self.nes_env.step(action)
+                for i in range(2):
+                    state, reward, done, info = self.nes_env.step(action)
 
                 resized = cv2.resize(state, dsize=(WIDTH, HEIGHT), interpolation=cv2.INTER_CUBIC)
                 frame = numpy.rot90(resized, -1, axes=(0, 1))
@@ -109,7 +111,8 @@ class NESPlugin(VoxelHorizonPlugin):
 
             state = self.nes_env.reset()
 
-            game_context.write_text(0xffff0000, "Start ROM..!\n")
+            game_context.write_text(0xff00ff00, "Start NES Emulator..!\n")
+            game_context.write_text(0xff00ff00, "Load `mario-bros-1.nes` ROM file.....")
         else:
             self.nes_env.close()
             self.nes_env = None
