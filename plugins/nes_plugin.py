@@ -18,7 +18,7 @@ TARGET_Z        = 0
 
 WIDTH = 100
 HEIGHT = 100
-FRAME_RATE = 12.0
+FRAME_RATE = 20.0
 FRAME_RATE_INTERVAL = 1 / FRAME_RATE
 
 class NESPlugin(VoxelHorizonPlugin):
@@ -62,8 +62,29 @@ class NESPlugin(VoxelHorizonPlugin):
             if interval > FRAME_RATE_INTERVAL:
                 self.last_time = now
 
-                action = self.nes_keys.get(None, 0)
+                key_list = []
+
+                if game_context.is_key_press(0x41):
+                    key_list.append(97)
+                if game_context.is_key_press(0x57):
+                    key_list.append(119)
+                if game_context.is_key_press(0x53):
+                    key_list.append(115)
+                if game_context.is_key_press(0x44):
+                    key_list.append(100)
+                    
+                if game_context.is_key_press(0x20):
+                    key_list.append(111)
+                if game_context.is_key_press(0x0D):
+                    key_list.append(112)
+
+                if game_context.is_key_press(0x4F):
+                    key_list.append(32)
+                if game_context.is_key_press(0x50):
+                    key_list.append(13)
                 
+                action = self.nes_keys.get(tuple(key_list), 0)
+
                 state, reward, done, info = self.nes_env.step(action)
 
                 resized = cv2.resize(state, dsize=(WIDTH, HEIGHT), interpolation=cv2.INTER_CUBIC)

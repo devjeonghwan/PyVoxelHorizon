@@ -56,5 +56,13 @@ class GameContext:
     def is_mouse_right_button_down(self) -> bool:
         return read_memory(self.address + GAME_OFFSET['FIELD']['MOUSE_RIGHT_BUTTON_DOWN'], ctypes.c_bool)
     
+    def is_key_press(self, virtual_key: int) -> bool:
+        key_press_table_address = read_memory(self.address + GAME_OFFSET['FIELD']['KEY_PRESS_TABLE_ADDRESS'], ctypes.c_void_p)
+
+        if not key_press_table_address:
+            return False
+        
+        return read_memory(key_press_table_address + virtual_key, ctypes.c_ubyte) != 0
+    
     def write_text(self, color: int, text: str):
         self.function_write_text(self.address, color, text)

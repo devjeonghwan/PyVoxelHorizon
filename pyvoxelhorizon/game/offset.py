@@ -23,6 +23,8 @@ GAME_OFFSET = {
         'MOUSE_RIGHT_BUTTON_DOWN'       : 0x00000BE8,
 
         'VOXEL_EDITOR'                  : 0x000007E0,
+
+        'KEY_PRESS_TABLE_ADDRESS'       : 0x000008C8
     },
     'FUNCTION': {
         'WRITE_TEXT'                    : 0x0005A120
