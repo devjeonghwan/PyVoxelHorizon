@@ -11,15 +11,15 @@ import numpy
 import cv2
 import os
 
-PLUGIN_NAME     = "DOOMPlugin"
+PLUGIN_NAME         = "DOOMPlugin"
 
-TARGET_X        = 0
-TARGET_Y        = 0
-TARGET_Z        = 0
+TARGET_X            = 0
+TARGET_Y            = 0
+TARGET_Z            = 0
 
-WIDTH = 120
-HEIGHT = 100
-FRAME_RATE = 10.0
+WIDTH               = 120
+HEIGHT              = 100
+FRAME_RATE          = 10.0
 FRAME_RATE_INTERVAL = 1 / FRAME_RATE
 
 class DOOMPlugin(VoxelHorizonPlugin):
@@ -61,27 +61,27 @@ class DOOMPlugin(VoxelHorizonPlugin):
 
             if interval > FRAME_RATE_INTERVAL:
                 self.last_time = now
-
-# Available buttons: ['ATTACK', 'USE', 'TURN_LEFT', 'TURN_RIGHT', 'MOVE_RIGHT', 'MOVE_LEFT', 'MOVE_FORWARD', 'MOVE_BACKWARD', 'TURN_LEFT_RIGHT_DELTA', 'LOOK_UP_DOWN_DELTA']
+                
+                # [ATTACK, USE, TURN_LEFT, TURN_RIGHT, MOVE_RIGHT, MOVE_LEFT, MOVE_FORWARD, MOVE_BACKWARD, TURN_LEFT_RIGHT_DELTA, LOOK_UP_DOWN_DELTA]
                 actions = [False, False, False, False, False, False, False, False, False, False]
 
-                if game_context.is_key_press(0x41): # A
+                if game_context.is_key_press(KEY_A):
                     actions[5] = True
-                if game_context.is_key_press(0x57): # W
+                if game_context.is_key_press(KEY_W):
                     actions[6] = True
-                if game_context.is_key_press(0x53): # S
+                if game_context.is_key_press(KEY_S):
                     actions[7] = True
-                if game_context.is_key_press(0x44): # D
+                if game_context.is_key_press(KEY_D):
                     actions[4] = True
                     
-                if game_context.is_key_press(0x4F):
+                if game_context.is_key_press(KEY_O):
                     actions[0] = True
-                if game_context.is_key_press(0x4C):
+                if game_context.is_key_press(KEY_L):
                     actions[1] = True
                 
-                if game_context.is_key_press(0x25):
+                if game_context.is_key_press(KEY_LEFT):
                     actions[2] = True
-                if game_context.is_key_press(0x27):
+                if game_context.is_key_press(KEY_RIGHT):
                     actions[3] = True
                 
                 state = self.game.get_state()
@@ -99,6 +99,7 @@ class DOOMPlugin(VoxelHorizonPlugin):
                         _z = int(TARGET_Z)
         
                         voxel_editor.set_voxel_color(_x, _y, _z, find_similar_voxel_color(pixel[0], pixel[1], pixel[2]))
+                
         voxel_editor.finish()
             
     def on_mouse_right_click(self, game_context: GameContext):
@@ -126,10 +127,6 @@ class DOOMPlugin(VoxelHorizonPlugin):
             self.game.set_render_screen_flashes(True)  
 
             self.game.set_available_game_variables([vzd.GameVariable.AMMO2])
-            print("Available buttons:", [b.name for b in self.game.get_available_buttons()])
-
-            self.game.set_available_game_variables([vzd.GameVariable.AMMO2])
-            print("Available game variables:", [v.name for v in self.game.get_available_game_variables()], )
 
             self.game.set_window_visible(False)
             self.game.set_mode(vzd.Mode.PLAYER)

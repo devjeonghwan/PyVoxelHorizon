@@ -61,7 +61,7 @@ class VoxelEditor:
 
         return voxel_object.get_voxel(scaled_x, scaled_y, scaled_z)
     
-    def set_voxel_color(self, x: int, y: int, z: int, color: int) -> bool:
+    def set_voxel_color(self, x: int, y: int, z: int, color: VoxelColor) -> bool:
         voxel_object = self._get_voxel_object(x, y, z)
 
         if not voxel_object:
@@ -69,7 +69,7 @@ class VoxelEditor:
         
         return voxel_object.set_voxel_color_with_auto_resize(8, _align_voxel_coord(x), _align_voxel_coord(y), _align_voxel_coord(z), color)
     
-    def add_voxel(self, x: int, y: int, z: int, color: int) -> bool:
+    def add_voxel(self, x: int, y: int, z: int, color: VoxelColor) -> bool:
         voxel_object = self._get_voxel_object(x, y, z)
 
         if not voxel_object:
