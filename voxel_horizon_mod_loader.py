@@ -30,15 +30,20 @@ class PyVoxelHorizon:
         # Load Plugins
         sys.path.append(self.working_directory)
 
-        for file in os.listdir(os.path.join(self.working_directory, "plugins")):
+        plugins_directory = os.path.join(self.working_directory, "plugins")
+
+        for file in os.listdir(plugins_directory):
             if file.casefold().endswith('.py'):
                 plugin_name = file[:-3]
                 
                 module = importlib.import_module("plugins." + plugin_name, package="plugins")
                 
+                plugin_directory = os.path.join(plugins_directory, plugin_name)
+                os.makedirs(plugin_directory, exist_ok=True)
+
                 plugin_name = getattr(module, "PLUGIN_NAME")
 
-                self.plugins.append(getattr(module, plugin_name)(self.working_directory))
+                self.plugins.append(getattr(module, plugin_name)(plugin_directory))
        
         for plugin in self.plugins:
             plugin.on_initialize(self.game_context)

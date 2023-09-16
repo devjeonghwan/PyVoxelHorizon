@@ -23,6 +23,9 @@
 bool        working                             = true;
 bool        initialized                         = false;
 
+wchar_t     targetScriptFileDirectoryPath       [MAX_PATH];
+char        targetScriptFileName                [MAX_PATH];
+
 LPBYTE      clientBaseAddress                   = NULL;
 
 PyObject*   pythonVoxelHorizon                  = NULL;
@@ -154,6 +157,90 @@ void CrashReportForPythonException()
     }
 }
 
+void InitializePython()
+{
+    Py_Initialize();
+
+    PyObject* pythonSysModule = PyImport_ImportModule("sys");
+
+    if (pythonSysModule == NULL)
+    {
+        CrashReportForPythonException();
+    }
+
+    PyObject* pythonSysPath = PyObject_GetAttrString(pythonSysModule, "path");
+
+    if (pythonSysPath == NULL)
+    {
+        CrashReportForPythonException();
+    }
+    PyObject* pythonScriptFileDirectoryPath = PyUnicode_FromWideChar(targetScriptFileDirectoryPath, wcsnlen_s(targetScriptFileDirectoryPath, MAX_PATH));
+
+    if (pythonScriptFileDirectoryPath == NULL)
+    {
+        CrashReportForPythonException();
+    }
+
+    PyList_Append(pythonSysPath, pythonScriptFileDirectoryPath);
+
+    PyObject* pythonVoxelHorizonModule = PyImport_ImportModule(targetScriptFileName);
+
+    if (pythonVoxelHorizonModule == NULL)
+    {
+        CrashReportForPythonException();
+    }
+
+    PyObject* pythonVoxelHorizonClass = PyObject_GetAttrString(pythonVoxelHorizonModule, "PyVoxelHorizon");
+
+    if (pythonVoxelHorizonClass == NULL)
+    {
+        CrashReportForPythonException();
+    }
+
+    PyObject* pythonArgument = PyTuple_Pack(1, pythonScriptFileDirectoryPath);
+
+    if (pythonArgument == NULL)
+    {
+        CrashReportForPythonException();
+    }
+
+    pythonVoxelHorizon = PyObject_CallObject(pythonVoxelHorizonClass, pythonArgument);
+
+    if (pythonVoxelHorizon == NULL)
+    {
+        CrashReportForPythonException();
+    }
+
+    // Function Getter
+    pythonVoxelHorizonOnInitialize = PyObject_GetAttrString(pythonVoxelHorizon, "on_initialize");
+
+    if (pythonVoxelHorizonOnInitialize == NULL)
+    {
+        CrashReportForPythonException();
+    }
+
+    pythonVoxelHorizonOnLoop = PyObject_GetAttrString(pythonVoxelHorizon, "on_loop");
+
+    if (pythonVoxelHorizonOnLoop == NULL)
+    {
+        CrashReportForPythonException();
+    }
+
+    pythonVoxelHorizonOnStop = PyObject_GetAttrString(pythonVoxelHorizon, "on_stop");
+
+    if (pythonVoxelHorizonOnStop == NULL)
+    {
+        CrashReportForPythonException();
+    }
+
+    Py_DECREF(pythonArgument);
+    Py_DECREF(pythonVoxelHorizonClass);
+    Py_DECREF(pythonVoxelHorizonModule);
+    Py_DECREF(pythonScriptFileDirectoryPath);
+    Py_DECREF(pythonSysPath);
+    Py_DECREF(pythonSysModule);
+}
+
 void OnGameLoop()
 {
     LPBYTE gameObjectPointer = (LPBYTE)(*(DWORD64*)(clientBaseAddress + GLOBAL_OFFSET_CGAME));
@@ -166,7 +253,8 @@ void OnGameLoop()
         if (!initialized)
         {
             initialized = true;
-        
+
+            InitializePython();
             ExecutePythonOnInitialize(clientBaseAddress, gameObjectPointer);
         }
 
@@ -225,7 +313,7 @@ void ExecutePythonOnStop()
     {
         return;
     }
-    
+
     PyObject* pythonArgument = PyTuple_Pack(0);
     PyObject* pythonReturnValue = PyObject_CallObject(pythonVoxelHorizonOnStop, pythonArgument);
 
@@ -318,11 +406,9 @@ bool GetSimpleFileName(wchar_t* destination, wchar_t* path)
 extern "C"
 __declspec(dllexport) void InitializeBridge(void* arguments)
 {
-    int pathLength = wcsnlen_s((wchar_t*)arguments, MAX_PATH);
+    int pathLength = wcsnlen_s((wchar_t*)arguments, MAX_PATH - 1);
     wchar_t wideScriptFilePath[MAX_PATH];
-    wchar_t wideScriptFileDirectoryPath[MAX_PATH];
     wchar_t wideScriptFileName[MAX_PATH];
-    char scriptFileName[MAX_PATH];
 
     if (pathLength + 1 > MAX_PATH)
     {
@@ -330,10 +416,10 @@ __declspec(dllexport) void InitializeBridge(void* arguments)
     }
 
     wcscpy_s(wideScriptFilePath, pathLength + 1, (wchar_t*)arguments);
-    wcscpy_s(wideScriptFileDirectoryPath, pathLength + 1, (wchar_t*)arguments);
+    wcscpy_s(targetScriptFileDirectoryPath, pathLength + 1, (wchar_t*)arguments);
     wcscpy_s(wideScriptFileName, pathLength + 1, (wchar_t*)arguments);
 
-    if (!PathRemoveFileSpecW(wideScriptFileDirectoryPath))
+    if (!PathRemoveFileSpecW(targetScriptFileDirectoryPath))
     {
         CrashReport(EXIT_FAILURE, L"Failure `PathRemoveFileSpecW`");
     }
@@ -345,93 +431,12 @@ __declspec(dllexport) void InitializeBridge(void* arguments)
 
     size_t convertedSize;
 
-    if (wcstombs_s(&convertedSize, scriptFileName, wideScriptFileName, MAX_PATH) < 0)
+    if (wcstombs_s(&convertedSize, targetScriptFileName, wideScriptFileName, MAX_PATH) < 0)
     {
         CrashReport(EXIT_FAILURE, L"Failure convert wide character script file name to normal character.");
     }
 
-    scriptFileName[convertedSize] = '\0';
-
-    Py_Initialize();
-
-    PyObject* pythonSysModule = PyImport_ImportModule("sys");
-
-    if (pythonSysModule == NULL)
-    {
-        CrashReportForPythonException();
-    }
-
-    PyObject* pythonSysPath = PyObject_GetAttrString(pythonSysModule, "path");
-
-    if (pythonSysPath == NULL)
-    {
-        CrashReportForPythonException();
-    }
-    PyObject* pythonScriptFileDirectoryPath = PyUnicode_FromWideChar(wideScriptFileDirectoryPath, wcsnlen_s(wideScriptFileDirectoryPath, MAX_PATH));
-
-    if (pythonScriptFileDirectoryPath == NULL)
-    {
-        CrashReportForPythonException();
-    }
-
-    PyList_Append(pythonSysPath, pythonScriptFileDirectoryPath);
-    
-    PyObject* pythonVoxelHorizonModule = PyImport_ImportModule(scriptFileName);
-
-    if (pythonVoxelHorizonModule == NULL)
-    {
-        CrashReportForPythonException();
-    }
-
-    PyObject* pythonVoxelHorizonClass = PyObject_GetAttrString(pythonVoxelHorizonModule, "PyVoxelHorizon");
-
-    if (pythonVoxelHorizonClass == NULL)
-    {
-        CrashReportForPythonException();
-    }
-
-    PyObject* pythonArgument = PyTuple_Pack(1, pythonScriptFileDirectoryPath);
-
-    if (pythonArgument == NULL)
-    {
-        CrashReportForPythonException();
-    }
-
-    pythonVoxelHorizon = PyObject_CallObject(pythonVoxelHorizonClass, pythonArgument);
-
-    if (pythonVoxelHorizon == NULL)
-    {
-        CrashReportForPythonException();
-    }
-    
-    // Function Getter
-    pythonVoxelHorizonOnInitialize = PyObject_GetAttrString(pythonVoxelHorizon, "on_initialize");
-
-    if (pythonVoxelHorizonOnInitialize == NULL)
-    {
-        CrashReportForPythonException();
-    }
-
-    pythonVoxelHorizonOnLoop = PyObject_GetAttrString(pythonVoxelHorizon, "on_loop");
-
-    if (pythonVoxelHorizonOnLoop == NULL)
-    {
-        CrashReportForPythonException();
-    }
-    
-    pythonVoxelHorizonOnStop = PyObject_GetAttrString(pythonVoxelHorizon, "on_stop");
-
-    if (pythonVoxelHorizonOnStop == NULL)
-    {
-        CrashReportForPythonException();
-    }
-
-    Py_DECREF(pythonArgument);
-    Py_DECREF(pythonVoxelHorizonClass);
-    Py_DECREF(pythonVoxelHorizonModule);
-    Py_DECREF(pythonScriptFileDirectoryPath);
-    Py_DECREF(pythonSysPath);
-    Py_DECREF(pythonSysModule);
+    targetScriptFileName[convertedSize] = '\0';
     
     if (!HookGameLoop())
     {

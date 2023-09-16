@@ -57,13 +57,13 @@ class TestPlugin(VoxelHorizonPlugin):
             voxel_editor.finish()
 
 
-    def on_mouse_right_click(self, game_context: GameContext):
-        if not self.is_playing:
-            self.is_playing = True
-            game_context.write_text(0xffff0000, "Start Wave!\n")
-        else:
-            self.is_playing = False
-            game_context.write_text(0xff00ff00, "Stop Wave!\n")
+    # def on_mouse_right_click(self, game_context: GameContext):
+    #     if not self.is_playing:
+    #         self.is_playing = True
+    #         game_context.write_text(0xffff0000, "Start Wave!\n")
+    #     else:
+    #         self.is_playing = False
+    #         game_context.write_text(0xff00ff00, "Stop Wave!\n")
 
     def on_stop(self):
         return None

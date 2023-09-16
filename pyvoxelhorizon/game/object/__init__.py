@@ -12,7 +12,7 @@ from .battle_scene import BattleScene
 
 from .voxel_object_manager import VoxelObjectManager, CreateVoxelObjectResult, align_vector3_to_voxel_object, align_coord_to_voxel_object
 
-from .voxel_object import VoxelObject, VoxelObjectProperty
+from .voxel_object import VoxelObject, VoxelObjectProperty, VoxelColor, find_similar_voxel_color, get_voxel_color
 
 __all__ = [
     "get_client_context", 
@@ -31,7 +31,10 @@ __all__ = [
     "align_coord_to_voxel_object",
 
     "VoxelObject",
-    "VoxelObjectProperty"
+    "VoxelObjectProperty",
+    "VoxelColor",
+    "find_similar_voxel_color",
+    "get_voxel_color",
 ]
 
 def get_client_context(address) -> ClientContext:
