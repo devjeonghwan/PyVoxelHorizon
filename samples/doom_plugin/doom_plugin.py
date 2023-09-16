@@ -17,8 +17,8 @@ TARGET_X        = 0
 TARGET_Y        = 0
 TARGET_Z        = 0
 
-WIDTH = 160
-HEIGHT = 120
+WIDTH = 120
+HEIGHT = 100
 FRAME_RATE = 10.0
 FRAME_RATE_INTERVAL = 1 / FRAME_RATE
 
@@ -87,7 +87,7 @@ class DOOMPlugin(VoxelHorizonPlugin):
                 state = self.game.get_state()
                 self.game.make_action(actions)
 
-                resized = cv2.resize(state.screen_buffer, dsize=(WIDTH, HEIGHT), interpolation=cv2.INTER_CUBIC)
+                resized = cv2.resize(state.screen_buffer, dsize=(WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)
                 frame = numpy.rot90(resized, -1, axes=(0, 1))
 
                 for w in range(WIDTH):

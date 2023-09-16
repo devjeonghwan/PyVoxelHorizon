@@ -15,6 +15,7 @@ pyvoxelhorizonbridge/windows/x64/Debug
 pyvoxelhorizonbridge/windows/x64/Release
 pyvoxelhorizonbridge/windows/x86/Debug
 pyvoxelhorizonbridge/windows/x86/Release
+pyvoxelhorizonbridge/windows/PyVoxelHorizonBridge/.vs
 pyvoxelhorizonbridge/windows/PyVoxelHorizonBridge/x64/Debug
 pyvoxelhorizonbridge/windows/PyVoxelHorizonBridge/x64/Release
 pyvoxelhorizonbridge/windows/PyVoxelHorizonBridge/x86/Debug

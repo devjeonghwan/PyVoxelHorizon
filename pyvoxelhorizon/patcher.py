@@ -36,6 +36,6 @@ def patch_with_python_script(script_file):
     
         injector.call(module_address, function_address, script_file_address)
 
-        # print("Initialized!")
+        print("Initialized!")
     finally:
         injector.deallocate(script_file_address)
