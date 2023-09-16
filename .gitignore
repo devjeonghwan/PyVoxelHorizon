@@ -10,15 +10,15 @@ frames
 
 pyvoxelhorizon/*.dll
 
-/windows/PyVoxelHorizonBridge/.vs
-/windows/PyVoxelHorizonBridge/x64/Debug
-/windows/PyVoxelHorizonBridge/x64/Release
-/windows/PyVoxelHorizonBridge/x86/Debug
-/windows/PyVoxelHorizonBridge/x86/Release
-/windows/PyVoxelHorizonBridge/PyVoxelHorizonBridge/x64/Debug
-/windows/PyVoxelHorizonBridge/PyVoxelHorizonBridge/x64/Release
-/windows/PyVoxelHorizonBridge/PyVoxelHorizonBridge/x86/Debug
-/windows/PyVoxelHorizonBridge/PyVoxelHorizonBridge/x86/Release
+pyvoxelhorizonbridge/windows/.vs
+pyvoxelhorizonbridge/windows/x64/Debug
+pyvoxelhorizonbridge/windows/x64/Release
+pyvoxelhorizonbridge/windows/x86/Debug
+pyvoxelhorizonbridge/windows/x86/Release
+pyvoxelhorizonbridge/windows/PyVoxelHorizonBridge/x64/Debug
+pyvoxelhorizonbridge/windows/PyVoxelHorizonBridge/x64/Release
+pyvoxelhorizonbridge/windows/PyVoxelHorizonBridge/x86/Debug
+pyvoxelhorizonbridge/windows/PyVoxelHorizonBridge/x86/Release
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
