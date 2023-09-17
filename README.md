@@ -11,7 +11,7 @@ First, You have to write own plugin code. Please see below codes.
 
 And put your plugin code in `plugins/` directory and Download or Build `PyVoxelHorizonBridge.dll` and copy dll to `pyvoxelhorizon/` directory.  
 
-Then run `AA.attach_to_vh`. Done!
+Then run `attach_to_vh.bat`. Done!
 
 ## How to build `PyVoxelHorizonBridge.dll`?
 1. Install `python==3.11.X` with enabled `development/embedded` options
