@@ -19,3 +19,10 @@ A framework that injects Python code into the Voxel Horizon process and provides
 
 ## How to development `PyVoxelHorizon`?
 Sorry, Not ready yet..
+
+## Demo Video
+### NES Plugin Demo (Mario)
+https://github.com/devjeonghwan/PyVoxelHorizon/assets/13144936/1086ecdf-439c-4afc-bf60-8ac00af043b5
+
+### Doom Plugin
+https://github.com/devjeonghwan/PyVoxelHorizon/assets/13144936/8e03dd6f-0eb6-47f0-8dcd-06b965163fa3
