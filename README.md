@@ -16,7 +16,7 @@ flowchart TB
     end
     
     subgraph Python Side
-    PY_VOXEL_HORIZON_WRAPPER <==>|"C++/Python\nIneterpolation"| PY_VOXEL_HORIZON
+    PY_VOXEL_HORIZON_WRAPPER <==>|"C++/Python\nInteroperation"| PY_VOXEL_HORIZON
     PY_VOXEL_HORIZON -->|"Implementation"| PY_VOXEL_HORIZON_PLUGIN_LOADER
     PY_VOXEL_HORIZON -..->|"Implementation"| IMPL1("Another Python Apps?")
     end
