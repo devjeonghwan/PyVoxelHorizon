@@ -5,7 +5,7 @@ class GameHook:
         self.address = address
 
 
-    def on_start_scene(self, vh_controller_address: int, network_layer_address: int, plugin_path: str):
+    def on_start_scene(self, game_controller_address: int, network_layer_address: int, plugin_path: str):
         return
 
     def on_run(self):
