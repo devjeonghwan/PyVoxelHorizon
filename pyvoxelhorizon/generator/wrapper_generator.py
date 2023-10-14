@@ -49,7 +49,9 @@ GENERATE_TARGETS = [
     "TRIANGLE",
 
     "DWORD_RECT",
-    "FLOAT_RECT"
+    "FLOAT_RECT",
+
+    "MIDI_NOTE"
 ]
 
 IGNORES = ["SetOnDeleteVoxelObjectFunc"]
@@ -131,6 +133,10 @@ HINTS = {
     },
     "FLOAT_RECT": {
         "name": "FloatRectangle"
+    },
+    
+    "MIDI_NOTE": {
+        "name": "MidiNote"
     },
 }
 
