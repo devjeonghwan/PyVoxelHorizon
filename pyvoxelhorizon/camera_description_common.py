@@ -1,7 +1,7 @@
 import ctypes
 import ctypes.wintypes as wintypes
 
-from vector3 import Vector3
+from .vector3 import Vector3
 
 class CameraDescriptionCommon(ctypes.Structure):
     _fields_ = (
