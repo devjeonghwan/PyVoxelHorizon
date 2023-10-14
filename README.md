@@ -7,9 +7,13 @@ flowchart TB
     PY_VOXEL_HORIZON_PLUGIN_LOADER["PyVoxelHorizon Plugin Loader\n(plugin_loader/)"]
     PY_VOXEL_HORIZON["PyVoxelHorizon Interface\n(pyvoxelhorizon/)"]
     PY_VOXEL_HORIZON_WRAPPER["PyVoxelHorizon Wrapper Plugin\n(wrapper_plugin/)"]
+    PY_VOXEL_HORIZON_WRAPPER_GENERATOR["PyVoxelHorizon Wrapper Generator\n(pyvoxelhorizon/generator/)"]
     VOXEL_HORIZON{{"VOXEL HORIZON Process"}}
+    VOXEL_HORIZON_HEADER_FILE{{"VOXEL HORIZON Offical SDK\nHeader Files"}}
     
     VOXEL_HORIZON -->|"Load\n(Official Function)"| PY_VOXEL_HORIZON_WRAPPER
+    VOXEL_HORIZON_HEADER_FILE -->|"Parse"| PY_VOXEL_HORIZON_WRAPPER_GENERATOR
+    PY_VOXEL_HORIZON_WRAPPER_GENERATOR -->|"Generate"| PY_VOXEL_HORIZON
 
     subgraph C++ Side
     PY_VOXEL_HORIZON_WRAPPER -->|"DLL Load"| PYTHON["CPython"]
