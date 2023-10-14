@@ -2,15 +2,18 @@ import os
 from sctokenizer import Source, TokenType
 
 HEADER_FILE_NAMES = ["IGameHookController.h", "typedef.h"]
-GENERATE_TARGETS = ["VH_EDIT_MODE", "IVHController"]
+GENERATE_TARGETS = ["VH_EDIT_MODE", "IVHController", "IVHNetworkLayer", "IVoxelObjectLite"]
 
 IGNORE_FUNCTIONS = ["SetOnDeleteVoxelObjectFunc"]
 HINTS = {
-    "C_SYMBOL": {
-        "name": "PY_SYMBOL"
-    },
     "IVHController": {
         "name": "GameController"
+    },
+    "IVHNetworkLayer": {
+        "name": "NetworkLayer"
+    },
+    "IVoxelObjectLite": {
+        "name": "VoxelObjectLite"
     }
 }
 
@@ -234,15 +237,20 @@ for header_file_name in HEADER_FILE_NAMES:
                     if brace_count == 0:
                         break
                 cursor += 1
-            output_interfaces.append(output_interface)
+            
+            if len(output_interface['functions']) > 0:
+                output_interfaces.append(output_interface)
+
             continue
         cursor += 1
+
 
 output_enum_names = []
 output_interface_names = []
 
 for output_enum in output_enums:
     output_enum_names.append(output_enum['name'])
+
 for output_interface in output_interfaces:
     output_interface_names.append(output_interface['name'])
 
@@ -335,6 +343,8 @@ def convert_raw_argument_to_python_ctype(raw_type):
     elif raw_type.endswith("*"):
         return "wintypes.LPVOID"
     
+    elif raw_type == "WORD":
+        return "wintypes.WORD"
     elif raw_type == "DWORD":
         return "wintypes.DWORD"
     elif raw_type == "BOOL":
@@ -410,6 +420,8 @@ def convert_raw_argument_to_python_type(raw_type):
     elif raw_type.endswith("*"):
         return "int"
     
+    elif raw_type == "WORD":
+        return "int"
     elif raw_type == "DWORD":
         return "int"
     elif raw_type == "BOOL":
@@ -466,14 +478,14 @@ for output_interface in output_interfaces:
 
     if interface_name in GENERATE_TARGETS:
         output_code = ""
-
+        
         python_interface_name = interface_name  
         interface_functions = output_interface['functions']
 
         if python_interface_name in HINTS:
             if "name" in HINTS[python_interface_name]:
                 python_interface_name = HINTS[python_interface_name]['name']
-                
+        
         python_global_load_functions_name = "load_functions_of_" + underbarlize(python_interface_name, lower=True)
         python_global_function_names = []
         python_function_names = []
@@ -485,7 +497,7 @@ for output_interface in output_interfaces:
         output_code += "IS_FUNCTIONS_LOADED = False"
         
         output_code += "\n"
-
+        
         for interface_function in interface_functions:
             function_name = interface_function['name']
 
