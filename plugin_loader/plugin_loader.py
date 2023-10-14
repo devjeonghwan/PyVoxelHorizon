@@ -37,3 +37,6 @@ class PyVoxelHorizonPluginLoader(GameHook):
         self.game_controller.write_text_to_system_dlg_w(0xFFFFFFFF, str(world_aabb) + "\n")
 
         return
+    
+
+    
