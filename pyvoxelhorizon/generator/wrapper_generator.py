@@ -51,9 +51,6 @@ GENERATE_TARGETS = [
     "DWORD_RECT",
     "FLOAT_RECT"
 ]
-# GENERATE_TARGETS = [
-#     "VECTOR3"
-# ]
 
 IGNORES = ["SetOnDeleteVoxelObjectFunc"]
 HINTS = {
@@ -112,17 +109,17 @@ HINTS = {
     },
     
     "INT_VECTOR3": {
-        "name": "IntVector2"
+        "name": "IntVector3"
     },
     "VECTOR3": {
-        "name": "Vector2"
+        "name": "Vector3"
     },
     
     "INT_VECTOR4": {
-        "name": "IntVector2"
+        "name": "IntVector4"
     },
     "VECTOR4": {
-        "name": "Vector2"
+        "name": "Vector4"
     },
     
     "TRIANGLE": {
@@ -474,6 +471,8 @@ def underbarlize(name, lower=False):
         word = name[letter_cursor]
 
         if word.isupper():
+            start_cursor = letter_cursor
+
             letter_cursor += 1
             singleUpper = True
 
@@ -493,7 +492,7 @@ def underbarlize(name, lower=False):
                         word = word[0:len(word) - 1]
                     break
                 
-            if letter_cursor != 0:
+            if start_cursor != 0:
                 new_name += "_"
 
         new_name += word
