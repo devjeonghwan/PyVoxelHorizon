@@ -715,7 +715,7 @@ for parsed_enum in parsed_enums:
             if not enum_type_name.startswith(enum_name):
                 enum_type_name = enum_name + "_" + enum_type_name
 
-            output_code += enum_type_name + "\t = " + str(enum_type_value) + "\n"
+            output_code += enum_type_name + " = " + str(enum_type_value) + "\n"
 
         output_code += "\n"
         output_code += "\n"
