@@ -2,7 +2,7 @@ import ctypes
 import ctypes.wintypes as wintypes
 
 from pyvoxelhorizon.util import *
-from pyvoxelhorizon.enums import *
+from pyvoxelhorizon.enum import *
 from pyvoxelhorizon.struct.vertex import Vertex
 
 class VertexQuad(ctypes.Structure):

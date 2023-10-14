@@ -100,8 +100,8 @@ HINTS = {
 
 UTIL_MODULE_PATH = "pyvoxelhorizon.util"
 
-ENUM_OUTPUT_DIRECTORY = "generated/enums"
-ENUM_MODULE_PATH = "pyvoxelhorizon.enums"
+ENUM_OUTPUT_DIRECTORY = "generated/enum"
+ENUM_MODULE_PATH = "pyvoxelhorizon.enum"
 
 INTERFACE_OUTPUT_DIRECTORY = "generated/interface"
 INTERFACE_MODULE_PATH = "pyvoxelhorizon.interface"

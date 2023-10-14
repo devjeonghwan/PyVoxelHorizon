@@ -2,7 +2,7 @@ import ctypes
 import ctypes.wintypes as wintypes
 
 from pyvoxelhorizon.util import *
-from pyvoxelhorizon.enums import *
+from pyvoxelhorizon.enum import *
 from pyvoxelhorizon.struct.midi_note import MidiNote
 from pyvoxelhorizon.struct.vector3 import Vector3
 from pyvoxelhorizon.struct.int_vector3 import IntVector3

@@ -2,7 +2,7 @@ import ctypes
 import ctypes.wintypes as wintypes
 
 from pyvoxelhorizon.util import *
-from pyvoxelhorizon.enums import *
+from pyvoxelhorizon.enum import *
 from pyvoxelhorizon.struct.aabb import AABB
 from pyvoxelhorizon.interface.voxel_object_lite import VoxelObjectLite
 from pyvoxelhorizon.struct.vector3 import Vector3
