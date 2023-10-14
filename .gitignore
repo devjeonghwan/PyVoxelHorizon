@@ -10,8 +10,6 @@ wrapper_plugin/Release/x64
 wrapper_plugin/Debug/x86
 wrapper_plugin/Release/x86
 
-generated/
-
 __pycache__/
 *.py[cod]
 *$py.class
