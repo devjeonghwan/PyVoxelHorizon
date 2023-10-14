@@ -1,10 +1,15 @@
 import os
 from sctokenizer import Source, TokenType
 
-HEADER_FILE_NAMES = ["IGameHookController.h", "typedef.h"]
-GENERATE_TARGETS = ["VH_EDIT_MODE", "IVHController", "IVHNetworkLayer", "IVoxelObjectLite"]
+HEADER_FILE_NAMES = ["header/IGameHookController.h", "header/typedef.h"]
+GENERATE_TARGETS = [
+    "VH_EDIT_MODE", 
+    "IVHController", 
+    "IVHNetworkLayer", 
+    "IVoxelObjectLite",
+]
 
-IGNORE_FUNCTIONS = ["SetOnDeleteVoxelObjectFunc"]
+IGNORES = ["SetOnDeleteVoxelObjectFunc"]
 HINTS = {
     "IVHController": {
         "name": "GameController"
@@ -17,9 +22,12 @@ HINTS = {
     }
 }
 
-output_enums = []
-output_interfaces = []
+OUTPUT_DIRECTORY = "generated/"
 
+parsed_enums = []
+parsed_interfaces = []
+
+# Parse Header Files
 for header_file_name in HEADER_FILE_NAMES:
     source = Source.from_file(header_file_name, lang='cpp')
     tokens = source.tokenize()
@@ -34,11 +42,12 @@ for header_file_name in HEADER_FILE_NAMES:
         token_type = token.token_type
         token_value = token.token_value
 
+        # Enum Parse
         if token_value == 'enum':
             cursor += 1
             name = tokens[cursor].token_value
 
-            output_enum = {
+            parsed_enum = {
                 'name': name,
                 'types': []
             }
@@ -64,7 +73,7 @@ for header_file_name in HEADER_FILE_NAMES:
                         last_enum_value = token_value
 
                     if token_type == TokenType.OPERATOR and token_value == ',':
-                        output_enum['types'].append({
+                        parsed_enum['types'].append({
                             'name': last_enum_name,
                             'value': last_enum_value
                         })
@@ -84,18 +93,18 @@ for header_file_name in HEADER_FILE_NAMES:
                 cursor += 1
             
             if last_enum_name != None and last_enum_value != None:
-                output_enum['types'].append({
+                parsed_enum['types'].append({
                     'name': last_enum_name,
                     'value': last_enum_value
                 })
 
-            output_enums.append(output_enum)
+            parsed_enums.append(parsed_enum)
             continue
         elif token_value == 'interface':
             cursor += 1
             name = tokens[cursor].token_value
 
-            output_interface = {
+            parsed_interface = {
                 'name': name,
                 'functions': []
             }
@@ -130,6 +139,7 @@ for header_file_name in HEADER_FILE_NAMES:
                             token_value = token.token_value
 
                             if target_token_index == 0:
+                                # Return Type Parse
                                 target_value = None
                                 
                                 if (token_type == TokenType.KEYWORD and token_value != "virtual") or token_type == TokenType.IDENTIFIER:
@@ -152,6 +162,7 @@ for header_file_name in HEADER_FILE_NAMES:
                                     output_function['return_type'] = target_value
                                     target_token_index += 1
                             elif target_token_index == 1:
+                                # Call Convention or Name Parse
                                 target_value = None
 
                                 if token_type == TokenType.IDENTIFIER:
@@ -175,10 +186,12 @@ for header_file_name in HEADER_FILE_NAMES:
                                         output_function['name'] = token_value
                                         target_token_index += 2
                             elif target_token_index == 2:
+                                # Name Parse
                                 if token_type == TokenType.IDENTIFIER:
                                     output_function['name'] = token_value
                                     target_token_index += 1
                             else:
+                                # Arguments Parse
                                 argument_brace_count = 0
 
                                 argument_tokens = []
@@ -228,7 +241,8 @@ for header_file_name in HEADER_FILE_NAMES:
 
                             cursor += 1
 
-                        output_interface['functions'].append(output_function)
+                        parsed_interface['functions'].append(output_function)
+
                 if token_type == TokenType.SPECIAL_SYMBOL and token_value == '{':
                     brace_count += 1
                 if token_type == TokenType.SPECIAL_SYMBOL and token_value == '}':
@@ -238,44 +252,14 @@ for header_file_name in HEADER_FILE_NAMES:
                         break
                 cursor += 1
             
-            if len(output_interface['functions']) > 0:
-                output_interfaces.append(output_interface)
+            if len(parsed_interface['functions']) > 0:
+                parsed_interfaces.append(parsed_interface)
 
             continue
         cursor += 1
 
-
-output_enum_names = []
-output_interface_names = []
-
-for output_enum in output_enums:
-    output_enum_names.append(output_enum['name'])
-
-for output_interface in output_interfaces:
-    output_interface_names.append(output_interface['name'])
-
-for output_enum in output_enums:
-    enum_name = output_enum['name']
-
-    if enum_name in GENERATE_TARGETS:
-        output_code = ""
-        enum_types = output_enum['types']
-
-        for enum_type in enum_types:
-            enum_type_name = enum_type['name']
-            enum_type_value = enum_type['value']
-
-            if enum_type_name in HINTS:
-                if "name" in HINTS[enum_type_name]:
-                    enum_type_name = HINTS[enum_type_name]['name']
-
-            if not enum_type_name.startswith(enum_name):
-                enum_type_name = enum_name + "_" + enum_type_name
-
-            output_code += enum_type_name + "\t = " + str(enum_type_value) + "\n"
-
-        with open(enum_name + ".py", 'w') as file:
-            file.write(output_code)
+output_enum_names = [parsed_enum['name'] for parsed_enum in parsed_enums]
+output_interface_names = [parsed_interface['name'] for parsed_interface in parsed_interfaces]
 
 def underbarlize(name, lower=False):
     new_name = ""
@@ -470,17 +454,41 @@ def convert_raw_arguments_to_python_types_with_name(raw_arguments):
     
     return python_names, python_types
 
-def get_python_global_function_name(interface_name, function_name):
-    return 
+os.makedirs(OUTPUT_DIRECTORY)
 
-for output_interface in output_interfaces:
-    interface_name = output_interface['name']
+# Enum Generate
+for parsed_enum in parsed_enums:
+    enum_name = parsed_enum['name']
+
+    if enum_name in GENERATE_TARGETS:
+        output_code = ""
+        enum_types = parsed_enum['types']
+
+        for enum_type in enum_types:
+            enum_type_name = enum_type['name']
+            enum_type_value = enum_type['value']
+
+            if enum_type_name in HINTS:
+                if "name" in HINTS[enum_type_name]:
+                    enum_type_name = HINTS[enum_type_name]['name']
+
+            if not enum_type_name.startswith(enum_name):
+                enum_type_name = enum_name + "_" + enum_type_name
+
+            output_code += enum_type_name + "\t = " + str(enum_type_value) + "\n"
+
+        with open(OUTPUT_DIRECTORY + "/" + enum_name + ".py", 'w') as file:
+            file.write(output_code)
+
+# Interface Generate
+for parsed_interface in parsed_interfaces:
+    interface_name = parsed_interface['name']
+    interface_functions = parsed_interface['functions']
 
     if interface_name in GENERATE_TARGETS:
         output_code = ""
         
         python_interface_name = interface_name  
-        interface_functions = output_interface['functions']
 
         if python_interface_name in HINTS:
             if "name" in HINTS[python_interface_name]:
@@ -498,10 +506,10 @@ for output_interface in output_interfaces:
         
         output_code += "\n"
         
-        for interface_function in interface_functions:
-            function_name = interface_function['name']
+        for function in interface_functions:
+            function_name = function['name']
 
-            if not function_name in IGNORE_FUNCTIONS:
+            if not function_name in IGNORES:
                 python_function_name = underbarlize(function_name, lower=True)
 
                 while python_function_name in python_function_names:
@@ -524,13 +532,13 @@ for output_interface in output_interfaces:
         function_index = 0
         function_offset = 0
         
-        for interface_function in interface_functions:
-            function_name = interface_function['name']
-            function_call_convention = interface_function['call_convention']
-            function_return_type = interface_function['return_type']
-            function_arguments = interface_function['arguments']
+        for function in interface_functions:
+            function_name = function['name']
+            function_call_convention = function['call_convention']
+            function_return_type = function['return_type']
+            function_arguments = function['arguments']
 
-            if not function_name in IGNORE_FUNCTIONS:
+            if not function_name in IGNORES:
                 python_function_type = ""
             
                 if function_call_convention == "__stdcall":
@@ -583,12 +591,12 @@ for output_interface in output_interfaces:
 
         function_index = 0
 
-        for interface_function in interface_functions:
-            function_name = interface_function['name']
-            function_return_type = interface_function['return_type']
-            function_arguments = interface_function['arguments']
+        for function in interface_functions:
+            function_name = function['name']
+            function_return_type = function['return_type']
+            function_arguments = function['arguments']
 
-            if not function_name in IGNORE_FUNCTIONS:
+            if not function_name in IGNORES:
                 python_function_name = python_function_names[function_index]
                 output_code += "    def " + python_function_name + "(self"
 
@@ -620,7 +628,6 @@ for output_interface in output_interfaces:
 
                 output_code += ":" + "\n"
                 
-                
                 if function_return_type != "void":
                     output_code += "        return " + python_global_function_names[function_index] + "(" + (", ".join(["self.address"] + python_function_argument_names)) + ")\n"
                 else:
@@ -629,5 +636,5 @@ for output_interface in output_interfaces:
 
                 function_index += 1
                 
-        with open(interface_name + ".py", 'w') as file:
+        with open(OUTPUT_DIRECTORY + "/" + interface_name + ".py", 'w') as file:
             file.write(output_code)
