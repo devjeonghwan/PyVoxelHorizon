@@ -98,7 +98,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(VOXEL_HORIZON_PATH)\Plugin\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VOXEL_HORIZON_PATH)\Plugin\include;$(PYTHON_PATH)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -106,6 +106,8 @@
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>PyVoxelHorizon.def</ModuleDefinitionFile>
       <OutputFile>$(VOXEL_HORIZON_PATH)\Plugin\bin\$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>$(PYTHON_PATH)\libs</AdditionalLibraryDirectories>
+      <AdditionalDependencies>python3_d.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -118,7 +120,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(VOXEL_HORIZON_PATH)\Plugin\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VOXEL_HORIZON_PATH)\Plugin\include;$(PYTHON_PATH)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -127,6 +129,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>PyVoxelHorizon.def</ModuleDefinitionFile>
+      <AdditionalLibraryDirectories>$(PYTHON_PATH)\libs</AdditionalLibraryDirectories>
+      <AdditionalDependencies>python3.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -137,7 +141,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(VOXEL_HORIZON_PATH)\Plugin\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VOXEL_HORIZON_PATH)\Plugin\include;$(PYTHON_PATH)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -145,6 +149,8 @@
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>PyVoxelHorizon.def</ModuleDefinitionFile>
       <OutputFile>$(VOXEL_HORIZON_PATH)\Plugin\bin\$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>$(PYTHON_PATH)\libs</AdditionalLibraryDirectories>
+      <AdditionalDependencies>python3_d.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -157,7 +163,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(VOXEL_HORIZON_PATH)\Plugin\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VOXEL_HORIZON_PATH)\Plugin\include;$(PYTHON_PATH)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -166,6 +172,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>PyVoxelHorizon.def</ModuleDefinitionFile>
+      <AdditionalLibraryDirectories>$(PYTHON_PATH)\libs</AdditionalLibraryDirectories>
+      <AdditionalDependencies>python3.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

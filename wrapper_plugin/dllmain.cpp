@@ -19,19 +19,19 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 STDAPI DllCreateInstance(void** ppv)
 {
-    HRESULT hr;
+    HRESULT hResult;
 
     PyVoxelHorizon* pPyVoxelHorizon = new PyVoxelHorizon;
 
     if (!pPyVoxelHorizon)
     {
-        hr = E_OUTOFMEMORY;
+        hResult = E_OUTOFMEMORY;
         goto lb_return;
     }
 
-    hr = S_OK;
+    hResult = S_OK;
     *ppv = pPyVoxelHorizon;
 
 lb_return:
-    return hr;
+    return hResult;
 }
