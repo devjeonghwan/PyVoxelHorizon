@@ -39,15 +39,27 @@ class PyVoxelHorizonPluginLoader(GameHook):
         return
     
     def on_console_command(self, command: str) -> bool:
-        if command == "cc":
+        if command == "create_test_voxel":
             vector = Vector3()
             vector.x = 1000.0
             vector.y = -1000.0
             vector.z = 200.0
-            # self.game_controller.write_text_to_system_dlg_w(0xFFFFFFFF, str(vector) + "\n")
-            error_code = wintypes.INT(123)
-            self.game_controller.create_voxel_object(vector, 1, 26, error_code)
-            # self.game_controller.write_text_to_system_dlg_w(0xFFFFFFFF, str(error_code.value) + "\n")
+
+            out_error_code = wintypes.INT()
+
+            new_voxel_object = self.game_controller.create_voxel_object(vector, 1, 26, out_error_code)
+
+            self.game_controller.write_text_to_system_dlg_w(0xFFFFFFFF, "Error Code: {0}\n".format(out_error_code.value))
+
+            if new_voxel_object:
+                out_new_width_depth_height = wintypes.UINT()
+
+                ret_add_voxel = new_voxel_object.add_voxel_with_auto_resize(out_new_width_depth_height, 0, 0, 0, 26, 8)
+
+                self.game_controller.write_text_to_system_dlg_w(0xFFFFFFFF, "Return: {0}\n".format(ret_add_voxel))
+
+                new_voxel_object.update_geometry(False)
+                new_voxel_object.update_lighting()
             
             return True
 
