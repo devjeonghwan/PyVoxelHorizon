@@ -1,0 +1,6 @@
+LIBRARY		PyVoxelHorizon
+
+DESCRIPTION	'VOXEL HORIZON Plugin Wrapper for Python'
+
+EXPORTS
+	DllCreateInstance	PRIVATE

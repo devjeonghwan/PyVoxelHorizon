@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>{6068f8e0-1ad1-4ad7-90ec-db5be60c5ef6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PyVoxelHorizon">
+      <UniqueIdentifier>{6e71b91d-5c64-46df-bd30-3d2505825f47}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="PyVoxelHorizon.h">
+      <Filter>PyVoxelHorizon</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="PyVoxelHorizon.cpp">
+      <Filter>PyVoxelHorizon</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PyVoxelHorizon.def">
+      <Filter>PyVoxelHorizon</Filter>
+    </None>
+  </ItemGroup>
+</Project>
