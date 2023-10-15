@@ -538,30 +538,30 @@ class GameController(AddressObject):
         
         return FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_INT_POSITION(self.address, piv_pos)
     
-    def find_voxel_object_list_with_sphere(self, pp_out_voxel_obj_lite_list: VoxelObjectLite, i_max_buffer_count: int, p_bs: BoundingSphere, pb_out_insufficient: wintypes.BOOL) -> int:
-        pp_out_voxel_obj_lite_list = get_address(pp_out_voxel_obj_lite_list)
+    def find_voxel_object_list_with_sphere(self, pp_out_voxel_obj_lite_list: list[VoxelObjectLite], i_max_buffer_count: int, p_bs: BoundingSphere, pb_out_insufficient: wintypes.BOOL) -> int:
+        pp_out_voxel_obj_lite_list = get_addresses_pointer(pp_out_voxel_obj_lite_list)
         p_bs = get_address(p_bs)
         pb_out_insufficient = get_address(pb_out_insufficient)
         
         return FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_SPHERE(self.address, pp_out_voxel_obj_lite_list, i_max_buffer_count, p_bs, pb_out_insufficient)
     
-    def find_voxel_object_list_with_capsule(self, pp_out_voxel_obj_lite_list: VoxelObjectLite, i_max_buffer_count: int, pv3_ray_orig: Vector3, pv3_ray_dir: Vector3, f_rs: float, pb_out_insufficient: wintypes.BOOL) -> int:
-        pp_out_voxel_obj_lite_list = get_address(pp_out_voxel_obj_lite_list)
+    def find_voxel_object_list_with_capsule(self, pp_out_voxel_obj_lite_list: list[VoxelObjectLite], i_max_buffer_count: int, pv3_ray_orig: Vector3, pv3_ray_dir: Vector3, f_rs: float, pb_out_insufficient: wintypes.BOOL) -> int:
+        pp_out_voxel_obj_lite_list = get_addresses_pointer(pp_out_voxel_obj_lite_list)
         pv3_ray_orig = get_address(pv3_ray_orig)
         pv3_ray_dir = get_address(pv3_ray_dir)
         pb_out_insufficient = get_address(pb_out_insufficient)
         
         return FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_CAPSULE(self.address, pp_out_voxel_obj_lite_list, i_max_buffer_count, pv3_ray_orig, pv3_ray_dir, f_rs, pb_out_insufficient)
     
-    def find_voxel_object_list_with_aabb(self, pp_out_voxel_obj_lite_list: VoxelObjectLite, i_max_buffer_count: int, p_aabb: AABB, pb_out_insufficient: wintypes.BOOL) -> int:
-        pp_out_voxel_obj_lite_list = get_address(pp_out_voxel_obj_lite_list)
+    def find_voxel_object_list_with_aabb(self, pp_out_voxel_obj_lite_list: list[VoxelObjectLite], i_max_buffer_count: int, p_aabb: AABB, pb_out_insufficient: wintypes.BOOL) -> int:
+        pp_out_voxel_obj_lite_list = get_addresses_pointer(pp_out_voxel_obj_lite_list)
         p_aabb = get_address(p_aabb)
         pb_out_insufficient = get_address(pb_out_insufficient)
         
         return FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_AABB(self.address, pp_out_voxel_obj_lite_list, i_max_buffer_count, p_aabb, pb_out_insufficient)
     
-    def find_voxel_object_list_with_screen_rect(self, pp_out_voxel_obj_lite_list: VoxelObjectLite, i_max_buffer_count: int, p_rect: Rect, f_dist: float, dw_viewport_index: int, pb_out_insufficient: wintypes.BOOL) -> int:
-        pp_out_voxel_obj_lite_list = get_address(pp_out_voxel_obj_lite_list)
+    def find_voxel_object_list_with_screen_rect(self, pp_out_voxel_obj_lite_list: list[VoxelObjectLite], i_max_buffer_count: int, p_rect: Rect, f_dist: float, dw_viewport_index: int, pb_out_insufficient: wintypes.BOOL) -> int:
+        pp_out_voxel_obj_lite_list = get_addresses_pointer(pp_out_voxel_obj_lite_list)
         p_rect = get_address(p_rect)
         pb_out_insufficient = get_address(pb_out_insufficient)
         
