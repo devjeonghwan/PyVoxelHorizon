@@ -41,7 +41,21 @@ GENERATE_TARGETS = [
 IGNORES = ["SetOnDeleteVoxelObjectFunc"]
 HINTS = {
     "IVHController": {
-        "name": "GameController"
+        "name": "GameController",
+        "functions": {
+            "CreateVoxelObject": {
+                "overloads": [
+                    {"name": "CreateVoxelObject", "order": 1},
+                    {"name": "CreateVoxelObjectAdvanced", "order": 0},
+                ]
+            },
+            "IsValidVoxelObjectPosition": {
+                "overloads": [
+                    {"name": "IsValidVoxelObjectPosition", "order": 1},
+                    {"name": "IsValidVoxelObjectIntPosition", "order": 0},
+                ]
+            },
+        }
     },
     "IVHNetworkLayer": {
         "name": "NetworkLayer"
@@ -528,6 +542,7 @@ def underbarlize(name, lower=False):
                     
                 if start_cursor != 0:
                     new_name += "_"
+            
 
             new_name += word
 
@@ -858,6 +873,9 @@ for target_interface in target_interfaces:
     interface_name = target_interface['name']
     interface_functions = target_interface['functions']
 
+    interface_hint = HINTS[interface_name] if interface_name in HINTS else {}
+    interface_functions_hint = interface_hint['functions'] if 'functions' in interface_hint else {}
+
     output_source = INTERFACE_SOURCE_PREFIX
     python_interface_name = convert_name_with_hint(interface_name)
 
@@ -870,7 +888,7 @@ for target_interface in target_interfaces:
     python_global_load_functions_name = "load_functions_of_" + underbarlize(python_interface_name, lower=True)
     python_interface_functions = []
     
-    function_offset = 0
+    function_index = 0
     
     for function in interface_functions:
         function_name = function['name']
@@ -879,21 +897,51 @@ for target_interface in target_interfaces:
         function_arguments = function['arguments']
 
         if not function_name in IGNORES:
-            python_function_name = underbarlize(function_name, lower=True)
+            function_offset = function_index * 8
 
-            while True:
-                is_overloaded = False
+            overload_index = 0
+            overload_targets = []
 
-                for python_interface_function in python_interface_functions:
-                    if python_interface_function['name'] == python_function_name:
-                        python_function_name = python_function_name + "_overloaded"
-                        is_overloaded = True
+            function_index_for_check = 0
 
-                        break
+            for function_for_check in interface_functions:
+                if function_for_check['name'] == function_name:
+                    if function_for_check == function:
+                        overload_index = len(overload_targets)
+
+                    overload_targets.append(function_index_for_check)
+                function_index_for_check += 1
+
+            is_overloaded = len(overload_targets) > 1
+
+            if is_overloaded:
+                # MSVC uses reversed offset for overload functions
+                function_offset = overload_targets[(len(overload_targets) - 1) - overload_index] * 8
+                python_function_name = function_name + "Offset" + str(function_offset)
                 
-                if not is_overloaded:
-                    break
-            
+                if function_name in interface_functions_hint:
+                    function_hint = interface_functions_hint[function_name]
+                    
+                    if ('overloads' in function_hint):
+                        overload_hint = function_hint['overloads']
+
+                        if len(overload_hint) <= overload_index:
+                            raise Exception("Not enough overload hints for `{0}::{1}`".format(interface_name, function_name))
+                        
+                        overload_function_hint = overload_hint[overload_index]
+                        
+                        function_offset = overload_targets[overload_function_hint['order']] * 8
+                        python_function_name = overload_function_hint['name']
+            else:
+                python_function_name = function_name
+
+                if function_name in interface_functions_hint:
+                    function_hint = interface_functions_hint[function_name]
+
+                    if 'name' in function_hint:
+                        python_function_name = function_hint['name']
+                
+            python_function_name = underbarlize(python_function_name, lower=True)
             python_global_function_name = "FUNCTION_" + underbarlize(python_interface_name, lower=False) + "_" + python_function_name.upper()
 
             if function_call_convention == "__stdcall":
@@ -937,7 +985,7 @@ for target_interface in target_interfaces:
                     output_source += "from " + import_module + " import " + import_name + "\n"
                     interface_init_module['imports'].append((import_module, import_name))
 
-        function_offset += 8
+        function_index += 1
     
     output_source += "\n"
     output_source += "IS_FUNCTIONS_LOADED = False" + "\n"

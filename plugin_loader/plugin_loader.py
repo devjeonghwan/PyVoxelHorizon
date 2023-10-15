@@ -2,6 +2,8 @@ from pyvoxelhorizon import GameHook
 from pyvoxelhorizon.interface import GameController
 from pyvoxelhorizon.interface import NetworkLayer
 from pyvoxelhorizon.struct import AABB
+from pyvoxelhorizon.struct import Vector3
+from pyvoxelhorizon.enum import *
 
 import ctypes
 import ctypes.wintypes as wintypes
@@ -36,5 +38,17 @@ class PyVoxelHorizonPluginLoader(GameHook):
 
         return
     
+    def on_console_command(self, command: str) -> bool:
+        if command == "cc":
+            vector = Vector3()
+            vector.x = 1000.0
+            vector.y = -1000.0
+            vector.z = 200.0
+            # self.game_controller.write_text_to_system_dlg_w(0xFFFFFFFF, str(vector) + "\n")
+            error_code = wintypes.INT(123)
+            self.game_controller.create_voxel_object(vector, 1, 26, error_code)
+            # self.game_controller.write_text_to_system_dlg_w(0xFFFFFFFF, str(error_code.value) + "\n")
+            
+            return True
 
-    
+        return False

@@ -7,6 +7,9 @@ def get_address(object):
     return ctypes.addressof(object)
 
 def cast_address(address: int, type: type):
+    if not address:
+        return None
+
     if issubclass(type, AddressObject):
         return type(address)
     

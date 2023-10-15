@@ -19,7 +19,7 @@ IS_FUNCTIONS_LOADED = False
 
 FUNCTION_GAME_CONTROLLER_GET_WORLD_INFO = None
 FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_OBJECT = None
-FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_OBJECT_OVERLOADED = None
+FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_OBJECT_ADVANCED = None
 FUNCTION_GAME_CONTROLLER_DELETE_VOXEL_OBJECT = None
 FUNCTION_GAME_CONTROLLER_DELETE_ALL_VOXEL_OBJECT = None
 FUNCTION_GAME_CONTROLLER_GET_INT_POSITION_LIST_WITH_SPHERE = None
@@ -44,7 +44,7 @@ FUNCTION_GAME_CONTROLLER_GET_CURSOR_VOXEL_OBJECT_PROPERY = None
 FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_COLOR = None
 FUNCTION_GAME_CONTROLLER_SET_BRUSH_VOXEL_OBJECT_COLOR = None
 FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_POSITION = None
-FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_POSITION_OVERLOADED = None
+FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_INT_POSITION = None
 FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_SPHERE = None
 FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_CAPSULE = None
 FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_AABB = None
@@ -98,13 +98,13 @@ def load_functions_of_game_controller(function_table_address: int):
     global FUNCTION_GAME_CONTROLLER_GET_WORLD_INFO
     FUNCTION_GAME_CONTROLLER_GET_WORLD_INFO = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 8, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 16, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_OBJECT
     FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_OBJECT = ctypes.WINFUNCTYPE(wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.DWORD, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 16, ctypes.c_void_p)
-    global FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_OBJECT_OVERLOADED
-    FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_OBJECT_OVERLOADED = ctypes.WINFUNCTYPE(wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.BOOL, wintypes.LPVOID)(function_address)
+    function_address = read_memory(function_table_address + 8, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_OBJECT_ADVANCED
+    FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_OBJECT_ADVANCED = ctypes.WINFUNCTYPE(wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.BOOL, wintypes.LPVOID)(function_address)
     
     function_address = read_memory(function_table_address + 24, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_DELETE_VOXEL_OBJECT
@@ -198,13 +198,13 @@ def load_functions_of_game_controller(function_table_address: int):
     global FUNCTION_GAME_CONTROLLER_SET_BRUSH_VOXEL_OBJECT_COLOR
     FUNCTION_GAME_CONTROLLER_SET_BRUSH_VOXEL_OBJECT_COLOR = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.BYTE)(function_address)
     
-    function_address = read_memory(function_table_address + 208, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 216, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_POSITION
     FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_POSITION = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 216, ctypes.c_void_p)
-    global FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_POSITION_OVERLOADED
-    FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_POSITION_OVERLOADED = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID)(function_address)
+    function_address = read_memory(function_table_address + 208, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_INT_POSITION
+    FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_INT_POSITION = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
     function_address = read_memory(function_table_address + 224, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_SPHERE
@@ -397,13 +397,13 @@ class GameController(AddressObject):
         
         return cast_address(FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_OBJECT(self.address, pv3_pos, dw_width_depth_height, color, p_out_err), VoxelObjectLite)
     
-    def create_voxel_object_overloaded(self, piv3_pos_in_grid_space: IntVector3, dw_width_depth_height: int, p_bit_table: ctypes.c_uint, p_color_table: wintypes.BYTE, color: int, b_immdieate_update: bool, p_out_err: wintypes.INT) -> VoxelObjectLite:
+    def create_voxel_object_advanced(self, piv3_pos_in_grid_space: IntVector3, dw_width_depth_height: int, p_bit_table: ctypes.c_uint, p_color_table: wintypes.BYTE, color: int, b_immdieate_update: bool, p_out_err: wintypes.INT) -> VoxelObjectLite:
         piv3_pos_in_grid_space = get_address(piv3_pos_in_grid_space)
         p_bit_table = get_address(p_bit_table)
         p_color_table = get_address(p_color_table)
         p_out_err = get_address(p_out_err)
         
-        return cast_address(FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_OBJECT_OVERLOADED(self.address, piv3_pos_in_grid_space, dw_width_depth_height, p_bit_table, p_color_table, color, b_immdieate_update, p_out_err), VoxelObjectLite)
+        return cast_address(FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_OBJECT_ADVANCED(self.address, piv3_pos_in_grid_space, dw_width_depth_height, p_bit_table, p_color_table, color, b_immdieate_update, p_out_err), VoxelObjectLite)
     
     def delete_voxel_object(self, p_voxel_obj_lite: VoxelObjectLite) -> None:
         p_voxel_obj_lite = get_address(p_voxel_obj_lite)
@@ -533,10 +533,10 @@ class GameController(AddressObject):
         
         return FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_POSITION(self.address, pv3_pos)
     
-    def is_valid_voxel_object_position_overloaded(self, piv_pos: IntVector3) -> bool:
+    def is_valid_voxel_object_int_position(self, piv_pos: IntVector3) -> bool:
         piv_pos = get_address(piv_pos)
         
-        return FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_POSITION_OVERLOADED(self.address, piv_pos)
+        return FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_INT_POSITION(self.address, piv_pos)
     
     def find_voxel_object_list_with_sphere(self, pp_out_voxel_obj_lite_list: VoxelObjectLite, i_max_buffer_count: int, p_bs: BoundingSphere, pb_out_insufficient: wintypes.BOOL) -> int:
         pp_out_voxel_obj_lite_list = get_address(pp_out_voxel_obj_lite_list)
