@@ -545,6 +545,7 @@ void __stdcall PyVoxelHorizon::OnStartScene(IVHController* pVHController, IVHNet
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return;
     }
 
     Py_DECREF(pPythonReturnValue);
@@ -566,6 +567,7 @@ void __stdcall PyVoxelHorizon::OnRun()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return;
     }
 
     Py_DECREF(pPythonReturnValue);
@@ -584,6 +586,7 @@ void __stdcall PyVoxelHorizon::OnDestroyScene()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return;
     }
 
     Py_DECREF(pPythonReturnValue);
@@ -606,6 +609,7 @@ BOOL __stdcall PyVoxelHorizon::OnMouseLButtonDown(int x, int y, UINT nFlags)
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -634,6 +638,7 @@ BOOL __stdcall PyVoxelHorizon::OnMouseLButtonUp(int x, int y, UINT nFlags)
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -662,6 +667,7 @@ BOOL __stdcall PyVoxelHorizon::OnMouseRButtonDown(int x, int y, UINT nFlags)
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -690,6 +696,7 @@ BOOL __stdcall PyVoxelHorizon::OnMouseRButtonUp(int x, int y, UINT nFlags)
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -718,6 +725,7 @@ BOOL __stdcall PyVoxelHorizon::OnMouseMove(int x, int y, UINT nFlags)
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -748,6 +756,7 @@ BOOL __stdcall PyVoxelHorizon::OnMouseMoveHV(int iMoveX, int iMoveY, BOOL bLButt
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -776,6 +785,7 @@ BOOL __stdcall PyVoxelHorizon::OnMouseWheel(int iWheel)
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -801,6 +811,7 @@ BOOL __stdcall PyVoxelHorizon::OnKeyDown(UINT nChar)
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -825,6 +836,7 @@ BOOL __stdcall PyVoxelHorizon::OnKeyUp(UINT nChar)
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -849,6 +861,7 @@ BOOL __stdcall PyVoxelHorizon::OnCharUnicode(UINT nChar)
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -873,6 +886,7 @@ BOOL __stdcall PyVoxelHorizon::OnDPadLB()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -895,6 +909,7 @@ BOOL __stdcall PyVoxelHorizon::OffDPadLB()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -917,6 +932,7 @@ BOOL __stdcall PyVoxelHorizon::OnDPadRB()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -939,6 +955,7 @@ BOOL __stdcall PyVoxelHorizon::OffDPadRB()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -962,6 +979,7 @@ BOOL __stdcall PyVoxelHorizon::OnDPadUp()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -984,6 +1002,7 @@ BOOL __stdcall PyVoxelHorizon::OnDPadDown()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1006,6 +1025,7 @@ BOOL __stdcall PyVoxelHorizon::OnDPadLeft()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1028,6 +1048,7 @@ BOOL __stdcall PyVoxelHorizon::OnDPadRight()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1050,6 +1071,7 @@ BOOL __stdcall PyVoxelHorizon::OffDPadUp()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1072,6 +1094,7 @@ BOOL __stdcall PyVoxelHorizon::OffDPadDown()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1094,6 +1117,7 @@ BOOL __stdcall PyVoxelHorizon::OffDPadLeft()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1116,6 +1140,7 @@ BOOL __stdcall PyVoxelHorizon::OffDPadRight()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1139,6 +1164,7 @@ BOOL __stdcall PyVoxelHorizon::OnPadPressedA()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1161,6 +1187,7 @@ BOOL __stdcall PyVoxelHorizon::OnPadPressedB()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1183,6 +1210,7 @@ BOOL __stdcall PyVoxelHorizon::OnPadPressedX()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1205,6 +1233,7 @@ BOOL __stdcall PyVoxelHorizon::OnPadPressedY()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1227,6 +1256,7 @@ BOOL __stdcall PyVoxelHorizon::OffPadPressedA()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1249,6 +1279,7 @@ BOOL __stdcall PyVoxelHorizon::OffPadPressedB()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1271,6 +1302,7 @@ BOOL __stdcall PyVoxelHorizon::OffPadPressedX()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1293,6 +1325,7 @@ BOOL __stdcall PyVoxelHorizon::OffPadPressedY()
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1317,6 +1350,7 @@ BOOL __stdcall PyVoxelHorizon::OnKeyDownFunc(UINT nChar)
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1341,6 +1375,7 @@ BOOL __stdcall PyVoxelHorizon::OnKeyDownCtrlFunc(UINT nChar)
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);
@@ -1366,6 +1401,7 @@ BOOL __stdcall PyVoxelHorizon::OnPreConsoleCommand(const WCHAR* wchCmd, DWORD dw
     if (pPythonReturnValue == NULL)
     {
         this->ShowPythonException();
+        return false;
     }
 
     bool returnValue = PyObject_IsTrue(pPythonReturnValue);

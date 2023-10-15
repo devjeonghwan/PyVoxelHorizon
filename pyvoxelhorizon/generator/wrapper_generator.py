@@ -669,7 +669,7 @@ def convert_raw_arguments_to_python_ctypes(raw_arguments):
     
     return python_ctypes
 
-def convert_raw_type_to_python_type_info(raw_type):
+def convert_raw_type_to_python_type_info(raw_type, is_return_type: bool = False):
     if raw_type == "void":
         return {"type": "None", "from_statement": "{0}", "to_statement": "{0}"}
     elif raw_type == "void*":
@@ -754,16 +754,37 @@ def convert_raw_type_to_python_type_info(raw_type):
     
     else:
         if raw_type.endswith('*'):
+            pointer_depth = 0
+
+            while True:
+                position = len(raw_type) - pointer_depth
+
+                if raw_type[position - 1: position] == '*':
+                    pointer_depth += 1
+                else:
+                    break
+            
             new_type = raw_type.rstrip('*')
 
-            if new_type in target_enum_names:
-                new_type = convert_name_with_hint(new_type)
+            if pointer_depth == 1:
+                if new_type in target_enum_names:
+                    new_type = convert_name_with_hint(new_type)
 
-                return {"type": "wintypes.INT", "from_statement": "get_address({0})", "to_statement": "cast_address({0}, wintypes.INT)"}
-            elif new_type in target_struct_names or new_type in target_interface_names:
-                new_type = convert_name_with_hint(new_type)
+                    return {"type": "wintypes.INT", "from_statement": "get_address({0})", "to_statement": "cast_address({0}, wintypes.INT)"}
+                elif new_type in target_struct_names or new_type in target_interface_names:
+                    new_type = convert_name_with_hint(new_type)
 
-                return {"type": new_type, "from_statement": "get_address({0})", "to_statement": "cast_address({0}, " + new_type + ")"}
+                    return {"type": new_type, "from_statement": "get_address({0})", "to_statement": "cast_address({0}, " + new_type + ")"}
+            elif pointer_depth == 2:
+                if not is_return_type:
+                    if new_type in target_enum_names:
+                        new_type = convert_name_with_hint(new_type)
+                        
+                        return {"type": "list[wintypes.INT]", "from_statement": "get_addresses_pointer({0})", "to_statement": None}
+                    elif new_type in target_struct_names or new_type in target_interface_names:
+                        new_type = convert_name_with_hint(new_type)
+                        
+                        return {"type": "list[" + new_type + "]", "from_statement": "get_addresses_pointer({0})", "to_statement": None}
             
         raise Exception("Unknown argument type `{0}`".format(raw_type))
 
@@ -954,7 +975,7 @@ for target_interface in target_interfaces:
             python_function_return_ctype = convert_raw_type_to_python_ctype(function_return_type)
             python_function_argument_ctypes = convert_raw_arguments_to_python_ctypes(function_arguments)
             
-            python_function_python_return_type_info = convert_raw_type_to_python_type_info(function_return_type)
+            python_function_python_return_type_info = convert_raw_type_to_python_type_info(function_return_type, is_return_type=True)
             python_function_python_argument_type_infos, python_function_argument_names = convert_raw_arguments_to_python_argument_type_infos_and_names(function_arguments)
 
             python_interface_functions.append({
