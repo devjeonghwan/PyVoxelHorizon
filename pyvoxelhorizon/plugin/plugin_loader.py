@@ -53,11 +53,13 @@ class PluginLoader(GameHook):
             sys.path.append(py_voxel_horizon_directory_path)
             sys.path.append(plugins_directory_path)
 
+            os.makedirs(plugins_directory_path, exist_ok=True)
+
             for file in os.listdir(plugins_directory_path):
                 if file.casefold().endswith('.py'):
                     plugin_name = file[:-3]
 
-                    module = importlib.import_module("plugins." + plugin_name, package="plugins")
+                    module = importlib.import_module("plugins." + plugin_name)
                     plugin_name = getattr(module, "PLUGIN_NAME")
 
                     plugin_directory_path = os.path.join(plugins_directory_path, plugin_name)
@@ -73,6 +75,9 @@ class PluginLoader(GameHook):
     def refresh_all_plugins(self):
         for plugin in self.plugins:
             plugin.on_destroy()
+
+        self.plugins = []
+        importlib.invalidate_caches()
 
         for plugin_info in self.plugin_infos:
             importlib.reload(plugin_info.module)
