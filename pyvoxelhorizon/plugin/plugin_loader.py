@@ -15,7 +15,7 @@ class PluginInfo:
     name: str = None
     directory_path: str = None
 
-    def __init__(self, module: ModuleType, name: str,  directory_path: str):
+    def __init__(self, module: ModuleType, name: str, directory_path: str):
         self.module = module
         self.name = name
         self.directory_path = directory_path
@@ -85,5 +85,10 @@ class PluginLoader(GameHook):
     def on_console_command(self, command: str) -> bool:
         if command.lower() == "reload_plugins":
             self.refresh_all_plugins()
+            return True
+
+        for plugin in self.plugins:
+            if plugin.on_command(command):
+                return True
 
         return False
