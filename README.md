@@ -5,8 +5,9 @@ Are you looking for PyVoxelHorizon DLL injection version? See this [branch](http
 ```mermaid
 flowchart TD
     USER_PLUGIN["User Python Plugins"]
-    PY_VOXEL_HORIZON_PLUGIN_LOADER["PyVoxelHorizon Plugin Loader\n(plugin_loader/)"]
-    PY_VOXEL_HORIZON["PyVoxelHorizon Interface\n(pyvoxelhorizon/)"]
+    PY_VOXEL_HORIZON_PLUGIN_LOADER["PyVoxelHorizon Plugin Loader\n(pyvoxelhorizon/plugin/plugin_loader.py)"]
+    PY_VOXEL_HORIZON_PLUGIN["PyVoxelHorizon Plugin Interface\n(pyvoxelhorizon/plugin/)"]
+    PY_VOXEL_HORIZON["PyVoxelHorizon Interface\n(pyvoxelhorizon/enum|interface|struct/)"]
     PY_VOXEL_HORIZON_WRAPPER["PyVoxelHorizon Wrapper Plugin\n(wrapper_plugin/)"]
     PY_VOXEL_HORIZON_WRAPPER_GENERATOR["PyVoxelHorizon Wrapper Generator\n(pyvoxelhorizon/generator/)"]
     VOXEL_HORIZON{{"VOXEL HORIZON Process"}}
@@ -28,6 +29,7 @@ flowchart TD
     end
 
     subgraph Plugin Side
+    PY_VOXEL_HORIZON_PLUGIN -->|"Implementation"| USER_PLUGIN
     PY_VOXEL_HORIZON_PLUGIN_LOADER -->|"Loads\n(Hot Reloads, Plugin Load, Helpers, ...)"| USER_PLUGIN
     end
 ```
