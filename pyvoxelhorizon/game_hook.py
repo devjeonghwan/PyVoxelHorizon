@@ -10,7 +10,7 @@ class GameHook:
     def on_run(self):
         return
 
-    def on_destory_scene(self):
+    def on_destroy_scene(self):
         return
 
     def on_mouse_left_button_down(self, x: int, y: int, flags: int) -> bool:

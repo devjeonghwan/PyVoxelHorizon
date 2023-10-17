@@ -2,8 +2,10 @@
 
 rmdir %VOXEL_HORIZON_PATH%\Plugin\bin\PyVoxelHorizon\pyvoxelhorizon\ /s /q
 mkdir %VOXEL_HORIZON_PATH%\Plugin\bin\PyVoxelHorizon
+mkdir %VOXEL_HORIZON_PATH%\Plugin\bin\PyVoxelHorizon\plugins\
 mkdir %VOXEL_HORIZON_PATH%\Plugin\bin\PyVoxelHorizon\pyvoxelhorizon\
 
+xcopy sample %VOXEL_HORIZON_PATH%\Plugin\bin\PyVoxelHorizon\plugins\ /E /H /Y
 xcopy pyvoxelhorizon %VOXEL_HORIZON_PATH%\Plugin\bin\PyVoxelHorizon\pyvoxelhorizon\ /E /H /Y
 
 SET ENTRYPOINT_FILE_PATH="%VOXEL_HORIZON_PATH%\Plugin\bin\PyVoxelHorizon\entrypoint.py"
