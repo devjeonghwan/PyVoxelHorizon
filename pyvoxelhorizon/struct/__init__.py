@@ -12,6 +12,7 @@ from .int_vector4 import IntVector4
 from .vertex import Vertex
 from .vertex_quad import VertexQuad
 from .midi_note import MidiNote
+from .midi_device_info import MIDI_DEVICE_INFO
 
 __all__ = [
     'VoxelObjectProperty',
@@ -28,4 +29,5 @@ __all__ = [
     'Vertex',
     'VertexQuad',
     'MidiNote',
+    'MIDI_DEVICE_INFO',
 ]

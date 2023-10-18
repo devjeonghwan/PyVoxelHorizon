@@ -8,12 +8,13 @@ from pyvoxelhorizon.interface.voxel_object_lite import VoxelObjectLite
 from pyvoxelhorizon.struct.vector3 import Vector3
 from pyvoxelhorizon.struct.int_vector3 import IntVector3
 from pyvoxelhorizon.struct.bounding_sphere import BoundingSphere
+from pyvoxelhorizon.struct.voxel_description_lite import VoxelDescriptionLite
 from pyvoxelhorizon.struct.triangle import Triangle
 from pyvoxelhorizon.struct.rect import Rect
 from pyvoxelhorizon.struct.plane import Plane
 from pyvoxelhorizon.struct.int_vector4 import IntVector4
 from pyvoxelhorizon.struct.vertex_quad import VertexQuad
-from pyvoxelhorizon.struct.voxel_description_lite import VoxelDescriptionLite
+from pyvoxelhorizon.struct.midi_device_info import MIDI_DEVICE_INFO
 
 IS_FUNCTIONS_LOADED = False
 
@@ -26,7 +27,9 @@ FUNCTION_GAME_CONTROLLER_GET_INT_POSITION_LIST_WITH_SPHERE = None
 FUNCTION_GAME_CONTROLLER_GET_INT_POSITION_WITH_FLOAT_COORD = None
 FUNCTION_GAME_CONTROLLER_GET_FLOAT_POSITION_WITH_INT_COORD = None
 FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_AABB_WITH_INT_COORD = None
+FUNCTION_GAME_CONTROLLER_GET_RAY_WITH_SCREEN_COORD = None
 FUNCTION_GAME_CONTROLLER_INTERSECT_VOXEL_WITH_RAY_AS_TRI_MESH = None
+FUNCTION_GAME_CONTROLLER_INTERSECT_VOXEL_WITH_RAY = None
 FUNCTION_GAME_CONTROLLER_INTERSECT_BOTTOM_WITH_RAY = None
 FUNCTION_GAME_CONTROLLER_FIND_TRI_LIST_WITH_CAPSULE_RAY = None
 FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_WITH_GRID_COORD = None
@@ -78,6 +81,9 @@ FUNCTION_GAME_CONTROLLER_CLEAR_SELECTED_VOXEL = None
 FUNCTION_GAME_CONTROLLER_CLEAR_SELECTED_ALL = None
 FUNCTION_GAME_CONTROLLER_WRITE_FILE = None
 FUNCTION_GAME_CONTROLLER_READ_FILE = None
+FUNCTION_GAME_CONTROLLER_BEGIN_WRITE_TEXT_TO_CONSOLE = None
+FUNCTION_GAME_CONTROLLER_WRITE_TEXT_TO_CONSOLE = None
+FUNCTION_GAME_CONTROLLER_END_WRITE_TEXT_TO_CONSOLE = None
 FUNCTION_GAME_CONTROLLER_GET_CURRENT_COLOR_INDEX = None
 FUNCTION_GAME_CONTROLLER_GET_CURRENT_EDIT_MODE = None
 FUNCTION_GAME_CONTROLLER_GET_CURRENT_PLANE_TYPE = None
@@ -87,6 +93,22 @@ FUNCTION_GAME_CONTROLLER_IS_UPDATING = None
 FUNCTION_GAME_CONTROLLER_UPDATE_VISIBILITY_ALL = None
 FUNCTION_GAME_CONTROLLER_ENABLE_DESTROYABLE_ALL = None
 FUNCTION_GAME_CONTROLLER_ENABLE_AUTO_RESTORE_ALL = None
+FUNCTION_GAME_CONTROLLER_BROWSE_WEB = None
+FUNCTION_GAME_CONTROLLER_CLOSE_WEB = None
+FUNCTION_GAME_CONTROLLER_GET_WEB_IMAGE = None
+FUNCTION_GAME_CONTROLLER_ON_WEB_MOUSE_L_BUTTON_DOWN = None
+FUNCTION_GAME_CONTROLLER_ON_WEB_MOUSE_L_BUTTON_UP = None
+FUNCTION_GAME_CONTROLLER_SET_MIDI_OUT_DEVICE = None
+FUNCTION_GAME_CONTROLLER_GET_SELECTED_MIDI_OUT_DEVICE = None
+FUNCTION_GAME_CONTROLLER_SET_MIDI_IN_DEVICE = None
+FUNCTION_GAME_CONTROLLER_GET_SELECTED_MIDI_IN_DEVICE = None
+FUNCTION_GAME_CONTROLLER_SET_VOLUME = None
+FUNCTION_GAME_CONTROLLER_SET_SUSTAIN_PEDAL = None
+FUNCTION_GAME_CONTROLLER_NOTE_ON = None
+FUNCTION_GAME_CONTROLLER_NOTE_OFF = None
+FUNCTION_GAME_CONTROLLER_GET_MIDI_IN_DEVICE_LIST = None
+FUNCTION_GAME_CONTROLLER_GET_MIDI_OUT_DEVICE_LIST = None
+FUNCTION_GAME_CONTROLLER_WRITE_NOTE_OR_CONTROL = None
 
 def load_functions_of_game_controller(function_table_address: int):
     global IS_FUNCTIONS_LOADED
@@ -131,248 +153,332 @@ def load_functions_of_game_controller(function_table_address: int):
     FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_AABB_WITH_INT_COORD = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
     function_address = read_memory(function_table_address + 72, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_GET_RAY_WITH_SCREEN_COORD
+    FUNCTION_GAME_CONTROLLER_GET_RAY_WITH_SCREEN_COORD = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_int, ctypes.c_int)(function_address)
+    
+    function_address = read_memory(function_table_address + 80, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_INTERSECT_VOXEL_WITH_RAY_AS_TRI_MESH
     FUNCTION_GAME_CONTROLLER_INTERSECT_VOXEL_WITH_RAY_AS_TRI_MESH = ctypes.WINFUNCTYPE(wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 80, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 88, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_INTERSECT_VOXEL_WITH_RAY
+    FUNCTION_GAME_CONTROLLER_INTERSECT_VOXEL_WITH_RAY = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID)(function_address)
+    
+    function_address = read_memory(function_table_address + 96, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_INTERSECT_BOTTOM_WITH_RAY
     FUNCTION_GAME_CONTROLLER_INTERSECT_BOTTOM_WITH_RAY = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 88, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 104, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_FIND_TRI_LIST_WITH_CAPSULE_RAY
     FUNCTION_GAME_CONTROLLER_FIND_TRI_LIST_WITH_CAPSULE_RAY = ctypes.WINFUNCTYPE(ctypes.c_int, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_int, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_float, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 96, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 112, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_WITH_GRID_COORD
     FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_WITH_GRID_COORD = ctypes.WINFUNCTYPE(wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 104, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 120, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_WITH_FLOAT_COORD
     FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_WITH_FLOAT_COORD = ctypes.WINFUNCTYPE(wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 112, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 128, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_NUM
     FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_NUM = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 120, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 136, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_PALETTED_COLOR_NUM
     FUNCTION_GAME_CONTROLLER_GET_PALETTED_COLOR_NUM = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 128, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 144, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SNAP_COORD
     FUNCTION_GAME_CONTROLLER_SNAP_COORD = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 136, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 152, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_POS
     FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_POS = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 144, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 160, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_CURSOR_VOXEL_OBJECT_POS
     FUNCTION_GAME_CONTROLLER_GET_CURSOR_VOXEL_OBJECT_POS = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 152, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 168, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SELECT_CURSOR_VOXEL_OBJECT_DETAIL
     FUNCTION_GAME_CONTROLLER_SELECT_CURSOR_VOXEL_OBJECT_DETAIL = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.UINT)(function_address)
     
-    function_address = read_memory(function_table_address + 160, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 176, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_SCALE
     FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_SCALE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, ctypes.c_float)(function_address)
     
-    function_address = read_memory(function_table_address + 168, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 184, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_VOXEL_SCALE
     FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_VOXEL_SCALE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, ctypes.c_float)(function_address)
     
-    function_address = read_memory(function_table_address + 176, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 192, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_RENDER_MODE
     FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_RENDER_MODE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, ctypes.c_int)(function_address)
     
-    function_address = read_memory(function_table_address + 184, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 200, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_CURSOR_VOXEL_OBJECT_PROPERY
     FUNCTION_GAME_CONTROLLER_GET_CURSOR_VOXEL_OBJECT_PROPERY = ctypes.WINFUNCTYPE(wintypes.UINT, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 192, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 208, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_COLOR
     FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_COLOR = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.BYTE)(function_address)
     
-    function_address = read_memory(function_table_address + 200, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 216, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SET_BRUSH_VOXEL_OBJECT_COLOR
     FUNCTION_GAME_CONTROLLER_SET_BRUSH_VOXEL_OBJECT_COLOR = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.BYTE)(function_address)
     
-    function_address = read_memory(function_table_address + 216, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 232, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_POSITION
     FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_POSITION = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 208, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 224, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_INT_POSITION
     FUNCTION_GAME_CONTROLLER_IS_VALID_VOXEL_OBJECT_INT_POSITION = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 224, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 240, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_SPHERE
     FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_SPHERE = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_int, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 232, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 248, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_CAPSULE
     FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_CAPSULE = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_int, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_float, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 240, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 256, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_AABB
     FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_AABB = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_int, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 248, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 264, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_SCREEN_RECT
     FUNCTION_GAME_CONTROLLER_FIND_VOXEL_OBJECT_LIST_WITH_SCREEN_RECT = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_int, wintypes.LPVOID, ctypes.c_float, wintypes.DWORD, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 256, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 272, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_PICEKD_POSITION
     FUNCTION_GAME_CONTROLLER_GET_PICEKD_POSITION = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 264, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 280, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_ADD_VOXEL
     FUNCTION_GAME_CONTROLLER_ADD_VOXEL = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.BYTE, wintypes.BOOL, wintypes.BOOL)(function_address)
     
-    function_address = read_memory(function_table_address + 272, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 288, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SET_VOXEL_COLOR
     FUNCTION_GAME_CONTROLLER_SET_VOXEL_COLOR = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.BYTE, wintypes.BOOL)(function_address)
     
-    function_address = read_memory(function_table_address + 280, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 296, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_COLOR_TABLE_FROM_PALETTE
     FUNCTION_GAME_CONTROLLER_GET_COLOR_TABLE_FROM_PALETTE = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 288, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 304, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_ADD_VOXELS_WITH_AABB_AUTO_RESIZE
     FUNCTION_GAME_CONTROLLER_ADD_VOXELS_WITH_AABB_AUTO_RESIZE = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.UINT, wintypes.BYTE)(function_address)
     
-    function_address = read_memory(function_table_address + 296, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 312, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_PAINT_VOXELS_WITH_AABB_AUTO_RESIZE
     FUNCTION_GAME_CONTROLLER_PAINT_VOXELS_WITH_AABB_AUTO_RESIZE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, wintypes.UINT, wintypes.BYTE)(function_address)
     
-    function_address = read_memory(function_table_address + 304, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 320, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_REMOVE_VOXELS_WITH_AABB_AUTO_RESIZE
     FUNCTION_GAME_CONTROLLER_REMOVE_VOXELS_WITH_AABB_AUTO_RESIZE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, wintypes.UINT)(function_address)
     
-    function_address = read_memory(function_table_address + 312, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 328, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_ADD_VOXELS_WITH_SPHERE_AUTO_RESIZE
     FUNCTION_GAME_CONTROLLER_ADD_VOXELS_WITH_SPHERE_AUTO_RESIZE = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_float, wintypes.LPVOID, wintypes.UINT, wintypes.BYTE)(function_address)
     
-    function_address = read_memory(function_table_address + 320, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 336, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_PAINT_VOXELS_WITH_SPHERE_AUTO_RESIZE
     FUNCTION_GAME_CONTROLLER_PAINT_VOXELS_WITH_SPHERE_AUTO_RESIZE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_float, wintypes.LPVOID, wintypes.UINT, wintypes.BYTE)(function_address)
     
-    function_address = read_memory(function_table_address + 328, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 344, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_REMOVE_VOXELS_WITH_SPHERE_AUTO_RESIZE
     FUNCTION_GAME_CONTROLLER_REMOVE_VOXELS_WITH_SPHERE_AUTO_RESIZE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_float, wintypes.UINT)(function_address)
     
-    function_address = read_memory(function_table_address + 336, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 352, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_REMOVE_VOXELS_WITH_SPHERE_BY_OBJ_LIST_AUTO_RESIZE
     FUNCTION_GAME_CONTROLLER_REMOVE_VOXELS_WITH_SPHERE_BY_OBJ_LIST_AUTO_RESIZE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_float, wintypes.LPVOID, wintypes.DWORD, wintypes.UINT)(function_address)
     
-    function_address = read_memory(function_table_address + 344, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 360, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_REMOVE_VOXELS_WITH_CAPSULE_AUTO_RESIZE
     FUNCTION_GAME_CONTROLLER_REMOVE_VOXELS_WITH_CAPSULE_AUTO_RESIZE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_float, wintypes.UINT)(function_address)
     
-    function_address = read_memory(function_table_address + 352, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 368, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_REMOVE_VOXELS_WITH_CAPSULE_BY_OBJ_LIST_AUTO_RESIZE
     FUNCTION_GAME_CONTROLLER_REMOVE_VOXELS_WITH_CAPSULE_BY_OBJ_LIST_AUTO_RESIZE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_float, wintypes.LPVOID, wintypes.DWORD, wintypes.UINT)(function_address)
     
-    function_address = read_memory(function_table_address + 360, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 376, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_WRITE_TEXT_TO_SYSTEM_DLG_W
     FUNCTION_GAME_CONTROLLER_WRITE_TEXT_TO_SYSTEM_DLG_W = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.DWORD, ctypes.c_wchar_p)(function_address)
     
-    function_address = read_memory(function_table_address + 368, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 384, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SET_FIRST_VOXEL_OBJECT
     FUNCTION_GAME_CONTROLLER_SET_FIRST_VOXEL_OBJECT = ctypes.WINFUNCTYPE(None, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 376, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 392, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_AND_NEXT
     FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_AND_NEXT = ctypes.WINFUNCTYPE(wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 384, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 400, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_POINT_LIST_WITH_WORLD_AABB
     FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_POINT_LIST_WITH_WORLD_AABB = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.UINT)(function_address)
     
-    function_address = read_memory(function_table_address + 392, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 408, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_POINT_LIST_WITH_WORLD_AABB_FOR_REMOVE
     FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_POINT_LIST_WITH_WORLD_AABB_FOR_REMOVE = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.UINT)(function_address)
     
-    function_address = read_memory(function_table_address + 400, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 416, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_POINT_LIST_WITH_WORLD_SPHERE
     FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_POINT_LIST_WITH_WORLD_SPHERE = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.UINT)(function_address)
     
-    function_address = read_memory(function_table_address + 408, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 424, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_POINT_LIST_WITH_WORLD_SPHERE_FOR_REMOVE
     FUNCTION_GAME_CONTROLLER_CREATE_VOXEL_POINT_LIST_WITH_WORLD_SPHERE_FOR_REMOVE = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.UINT)(function_address)
     
-    function_address = read_memory(function_table_address + 416, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 432, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_FOOTREST_BASE_OBJ_POS
     FUNCTION_GAME_CONTROLLER_GET_FOOTREST_BASE_OBJ_POS = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_float)(function_address)
     
-    function_address = read_memory(function_table_address + 424, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 440, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_FOOTREST_QUAD_LIST
     FUNCTION_GAME_CONTROLLER_GET_FOOTREST_QUAD_LIST = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.LPVOID, ctypes.c_int, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 432, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 448, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_FOOTREST_HEIGHT
     FUNCTION_GAME_CONTROLLER_GET_FOOTREST_HEIGHT = ctypes.WINFUNCTYPE(ctypes.c_float, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 440, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 456, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SET_SELECTED_VOXEL
     FUNCTION_GAME_CONTROLLER_SET_SELECTED_VOXEL = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_int, ctypes.c_int, ctypes.c_int)(function_address)
     
-    function_address = read_memory(function_table_address + 448, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 464, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SET_SELECTED
     FUNCTION_GAME_CONTROLLER_SET_SELECTED = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 456, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 472, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_CLEAR_SELECTED_VOXEL
     FUNCTION_GAME_CONTROLLER_CLEAR_SELECTED_VOXEL = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_int, ctypes.c_int, ctypes.c_int)(function_address)
     
-    function_address = read_memory(function_table_address + 464, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 480, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_CLEAR_SELECTED_ALL
     FUNCTION_GAME_CONTROLLER_CLEAR_SELECTED_ALL = ctypes.WINFUNCTYPE(None, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 472, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 488, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_WRITE_FILE
     FUNCTION_GAME_CONTROLLER_WRITE_FILE = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, ctypes.c_wchar_p)(function_address)
     
-    function_address = read_memory(function_table_address + 480, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 496, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_READ_FILE
     FUNCTION_GAME_CONTROLLER_READ_FILE = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, ctypes.c_wchar_p, wintypes.BOOL, wintypes.BOOL)(function_address)
     
-    function_address = read_memory(function_table_address + 488, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 504, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_BEGIN_WRITE_TEXT_TO_CONSOLE
+    FUNCTION_GAME_CONTROLLER_BEGIN_WRITE_TEXT_TO_CONSOLE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID)(function_address)
+    
+    function_address = read_memory(function_table_address + 512, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_WRITE_TEXT_TO_CONSOLE
+    FUNCTION_GAME_CONTROLLER_WRITE_TEXT_TO_CONSOLE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, ctypes.c_wchar_p, ctypes.c_int, wintypes.DWORD)(function_address)
+    
+    function_address = read_memory(function_table_address + 520, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_END_WRITE_TEXT_TO_CONSOLE
+    FUNCTION_GAME_CONTROLLER_END_WRITE_TEXT_TO_CONSOLE = ctypes.WINFUNCTYPE(None, wintypes.LPVOID)(function_address)
+    
+    function_address = read_memory(function_table_address + 528, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_CURRENT_COLOR_INDEX
     FUNCTION_GAME_CONTROLLER_GET_CURRENT_COLOR_INDEX = ctypes.WINFUNCTYPE(wintypes.BYTE, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 496, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 536, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_CURRENT_EDIT_MODE
     FUNCTION_GAME_CONTROLLER_GET_CURRENT_EDIT_MODE = ctypes.WINFUNCTYPE(ctypes.c_int, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 504, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 544, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_CURRENT_PLANE_TYPE
     FUNCTION_GAME_CONTROLLER_GET_CURRENT_PLANE_TYPE = ctypes.WINFUNCTYPE(ctypes.c_int, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 512, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 552, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_SELECTED_VOXEL_OBJ_DESC
     FUNCTION_GAME_CONTROLLER_GET_SELECTED_VOXEL_OBJ_DESC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 520, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 560, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_CURSOR_STATUS
     FUNCTION_GAME_CONTROLLER_GET_CURSOR_STATUS = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 528, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 568, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_IS_UPDATING
     FUNCTION_GAME_CONTROLLER_IS_UPDATING = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 536, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 576, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_UPDATE_VISIBILITY_ALL
     FUNCTION_GAME_CONTROLLER_UPDATE_VISIBILITY_ALL = ctypes.WINFUNCTYPE(None, wintypes.LPVOID)(function_address)
     
-    function_address = read_memory(function_table_address + 544, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 584, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_ENABLE_DESTROYABLE_ALL
     FUNCTION_GAME_CONTROLLER_ENABLE_DESTROYABLE_ALL = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.BOOL)(function_address)
     
-    function_address = read_memory(function_table_address + 552, ctypes.c_void_p)
+    function_address = read_memory(function_table_address + 592, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_ENABLE_AUTO_RESTORE_ALL
     FUNCTION_GAME_CONTROLLER_ENABLE_AUTO_RESTORE_ALL = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.BOOL)(function_address)
+    
+    function_address = read_memory(function_table_address + 608, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_BROWSE_WEB
+    FUNCTION_GAME_CONTROLLER_BROWSE_WEB = ctypes.WINFUNCTYPE(wintypes.LPVOID, wintypes.LPVOID, ctypes.c_char_p, wintypes.DWORD, wintypes.DWORD, wintypes.BOOL)(function_address)
+    
+    function_address = read_memory(function_table_address + 616, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_CLOSE_WEB
+    FUNCTION_GAME_CONTROLLER_CLOSE_WEB = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID)(function_address)
+    
+    function_address = read_memory(function_table_address + 624, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_GET_WEB_IMAGE
+    FUNCTION_GAME_CONTROLLER_GET_WEB_IMAGE = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.DWORD, wintypes.DWORD, wintypes.LPVOID)(function_address)
+    
+    function_address = read_memory(function_table_address + 632, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_ON_WEB_MOUSE_L_BUTTON_DOWN
+    FUNCTION_GAME_CONTROLLER_ON_WEB_MOUSE_L_BUTTON_DOWN = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_int, ctypes.c_int, wintypes.UINT)(function_address)
+    
+    function_address = read_memory(function_table_address + 640, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_ON_WEB_MOUSE_L_BUTTON_UP
+    FUNCTION_GAME_CONTROLLER_ON_WEB_MOUSE_L_BUTTON_UP = ctypes.WINFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, ctypes.c_int, ctypes.c_int, wintypes.UINT)(function_address)
+    
+    function_address = read_memory(function_table_address + 648, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_SET_MIDI_OUT_DEVICE
+    FUNCTION_GAME_CONTROLLER_SET_MIDI_OUT_DEVICE = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, ctypes.c_wchar_p)(function_address)
+    
+    function_address = read_memory(function_table_address + 656, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_GET_SELECTED_MIDI_OUT_DEVICE
+    FUNCTION_GAME_CONTROLLER_GET_SELECTED_MIDI_OUT_DEVICE = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID)(function_address)
+    
+    function_address = read_memory(function_table_address + 664, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_SET_MIDI_IN_DEVICE
+    FUNCTION_GAME_CONTROLLER_SET_MIDI_IN_DEVICE = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, ctypes.c_wchar_p)(function_address)
+    
+    function_address = read_memory(function_table_address + 672, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_GET_SELECTED_MIDI_IN_DEVICE
+    FUNCTION_GAME_CONTROLLER_GET_SELECTED_MIDI_IN_DEVICE = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID)(function_address)
+    
+    function_address = read_memory(function_table_address + 680, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_SET_VOLUME
+    FUNCTION_GAME_CONTROLLER_SET_VOLUME = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, ctypes.c_ubyte, ctypes.c_ubyte)(function_address)
+    
+    function_address = read_memory(function_table_address + 688, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_SET_SUSTAIN_PEDAL
+    FUNCTION_GAME_CONTROLLER_SET_SUSTAIN_PEDAL = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, ctypes.c_ubyte, ctypes.c_ubyte)(function_address)
+    
+    function_address = read_memory(function_table_address + 696, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_NOTE_ON
+    FUNCTION_GAME_CONTROLLER_NOTE_ON = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, ctypes.c_ubyte, ctypes.c_ubyte, ctypes.c_ubyte)(function_address)
+    
+    function_address = read_memory(function_table_address + 704, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_NOTE_OFF
+    FUNCTION_GAME_CONTROLLER_NOTE_OFF = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, ctypes.c_ubyte, ctypes.c_ubyte, ctypes.c_ubyte)(function_address)
+    
+    function_address = read_memory(function_table_address + 712, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_GET_MIDI_IN_DEVICE_LIST
+    FUNCTION_GAME_CONTROLLER_GET_MIDI_IN_DEVICE_LIST = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD)(function_address)
+    
+    function_address = read_memory(function_table_address + 720, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_GET_MIDI_OUT_DEVICE_LIST
+    FUNCTION_GAME_CONTROLLER_GET_MIDI_OUT_DEVICE_LIST = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD)(function_address)
+    
+    function_address = read_memory(function_table_address + 728, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_WRITE_NOTE_OR_CONTROL
+    FUNCTION_GAME_CONTROLLER_WRITE_NOTE_OR_CONTROL = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, ctypes.c_int, wintypes.BOOL, wintypes.DWORD, wintypes.DWORD)(function_address)
         
     IS_FUNCTIONS_LOADED = True
 
@@ -439,6 +545,12 @@ class GameController(AddressObject):
         
         return FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_AABB_WITH_INT_COORD(self.address, p_out_aabb, piv_pos)
     
+    def get_ray_with_screen_coord(self, pv3_out_pos: Vector3, pv3_out_dir: Vector3, x: int, y: int) -> bool:
+        pv3_out_pos = get_address(pv3_out_pos)
+        pv3_out_dir = get_address(pv3_out_dir)
+        
+        return FUNCTION_GAME_CONTROLLER_GET_RAY_WITH_SCREEN_COORD(self.address, pv3_out_pos, pv3_out_dir, x, y)
+    
     def intersect_voxel_with_ray_as_tri_mesh(self, pv3_out_intersect_point: Vector3, pf_out_t: ctypes.c_float, pv3_orig: Vector3, pv3_ray: Vector3) -> VoxelObjectLite:
         pv3_out_intersect_point = get_address(pv3_out_intersect_point)
         pf_out_t = get_address(pf_out_t)
@@ -446,6 +558,16 @@ class GameController(AddressObject):
         pv3_ray = get_address(pv3_ray)
         
         return cast_address(FUNCTION_GAME_CONTROLLER_INTERSECT_VOXEL_WITH_RAY_AS_TRI_MESH(self.address, pv3_out_intersect_point, pf_out_t, pv3_orig, pv3_ray), VoxelObjectLite)
+    
+    def intersect_voxel_with_ray(self, pv3_out_intersect_point: Vector3, pf_out_t: ctypes.c_float, pv3_out_axis: Vector3, p_out_voxel_desc: VoxelDescriptionLite, pv3_orig: Vector3, pv3_ray: Vector3) -> bool:
+        pv3_out_intersect_point = get_address(pv3_out_intersect_point)
+        pf_out_t = get_address(pf_out_t)
+        pv3_out_axis = get_address(pv3_out_axis)
+        p_out_voxel_desc = get_address(p_out_voxel_desc)
+        pv3_orig = get_address(pv3_orig)
+        pv3_ray = get_address(pv3_ray)
+        
+        return FUNCTION_GAME_CONTROLLER_INTERSECT_VOXEL_WITH_RAY(self.address, pv3_out_intersect_point, pf_out_t, pv3_out_axis, p_out_voxel_desc, pv3_orig, pv3_ray)
     
     def intersect_bottom_with_ray(self, pv3_out_intersect_point: Vector3, pv3_orig: Vector3, pv3_ray: Vector3) -> bool:
         pv3_out_intersect_point = get_address(pv3_out_intersect_point)
@@ -730,6 +852,18 @@ class GameController(AddressObject):
         
         return FUNCTION_GAME_CONTROLLER_READ_FILE(self.address, wch_file_name, b_delayed_update, b_lighting)
     
+    def begin_write_text_to_console(self) -> None:
+        
+        return FUNCTION_GAME_CONTROLLER_BEGIN_WRITE_TEXT_TO_CONSOLE(self.address)
+    
+    def write_text_to_console(self, wch_txt: str, i_len: int, dw_color: int) -> None:
+        
+        return FUNCTION_GAME_CONTROLLER_WRITE_TEXT_TO_CONSOLE(self.address, wch_txt, i_len, dw_color)
+    
+    def end_write_text_to_console(self) -> None:
+        
+        return FUNCTION_GAME_CONTROLLER_END_WRITE_TEXT_TO_CONSOLE(self.address)
+    
     def get_current_color_index(self) -> int:
         
         return FUNCTION_GAME_CONTROLLER_GET_CURRENT_COLOR_INDEX(self.address)
@@ -771,4 +905,73 @@ class GameController(AddressObject):
     def enable_auto_restore_all(self, b_switch: bool) -> None:
         
         return FUNCTION_GAME_CONTROLLER_ENABLE_AUTO_RESTORE_ALL(self.address, b_switch)
+    
+    def browse_web(self, sz_url: str, dw_width: int, dw_height: int, b_user_shared_memory: bool) -> int:
+        
+        return FUNCTION_GAME_CONTROLLER_BROWSE_WEB(self.address, sz_url, dw_width, dw_height, b_user_shared_memory)
+    
+    def close_web(self, p_handle: int) -> None:
+        
+        return FUNCTION_GAME_CONTROLLER_CLOSE_WEB(self.address, p_handle)
+    
+    def get_web_image(self, p_out_bits32: wintypes.BYTE, dw_width: int, dw_height: int, dw_dest_pitch: int, p_handle: int) -> bool:
+        p_out_bits32 = get_address(p_out_bits32)
+        
+        return FUNCTION_GAME_CONTROLLER_GET_WEB_IMAGE(self.address, p_out_bits32, dw_width, dw_height, dw_dest_pitch, p_handle)
+    
+    def on_web_mouse_l_button_down(self, p_handle: int, x: int, y: int, n_flags: int) -> None:
+        
+        return FUNCTION_GAME_CONTROLLER_ON_WEB_MOUSE_L_BUTTON_DOWN(self.address, p_handle, x, y, n_flags)
+    
+    def on_web_mouse_l_button_up(self, p_handle: int, x: int, y: int, n_flags: int) -> None:
+        
+        return FUNCTION_GAME_CONTROLLER_ON_WEB_MOUSE_L_BUTTON_UP(self.address, p_handle, x, y, n_flags)
+    
+    def set_midi_out_device(self, wch_device_name: str) -> bool:
+        
+        return FUNCTION_GAME_CONTROLLER_SET_MIDI_OUT_DEVICE(self.address, wch_device_name)
+    
+    def get_selected_midi_out_device(self, p_out_info: MIDI_DEVICE_INFO) -> bool:
+        p_out_info = get_address(p_out_info)
+        
+        return FUNCTION_GAME_CONTROLLER_GET_SELECTED_MIDI_OUT_DEVICE(self.address, p_out_info)
+    
+    def set_midi_in_device(self, wch_device_name: str) -> bool:
+        
+        return FUNCTION_GAME_CONTROLLER_SET_MIDI_IN_DEVICE(self.address, wch_device_name)
+    
+    def get_selected_midi_in_device(self, p_out_info: MIDI_DEVICE_INFO) -> bool:
+        p_out_info = get_address(p_out_info)
+        
+        return FUNCTION_GAME_CONTROLLER_GET_SELECTED_MIDI_IN_DEVICE(self.address, p_out_info)
+    
+    def set_volume(self, channel: int, volume: int) -> bool:
+        
+        return FUNCTION_GAME_CONTROLLER_SET_VOLUME(self.address, channel, volume)
+    
+    def set_sustain_pedal(self, channel: int, value: int) -> bool:
+        
+        return FUNCTION_GAME_CONTROLLER_SET_SUSTAIN_PEDAL(self.address, channel, value)
+    
+    def note_on(self, channel: int, note: int, velocity: int) -> bool:
+        
+        return FUNCTION_GAME_CONTROLLER_NOTE_ON(self.address, channel, note, velocity)
+    
+    def note_off(self, channel: int, note: int, velocity: int) -> bool:
+        
+        return FUNCTION_GAME_CONTROLLER_NOTE_OFF(self.address, channel, note, velocity)
+    
+    def get_midi_in_device_list(self, p_out_info_list: MIDI_DEVICE_INFO, dw_max_buffer_count: int) -> int:
+        p_out_info_list = get_address(p_out_info_list)
+        
+        return FUNCTION_GAME_CONTROLLER_GET_MIDI_IN_DEVICE_LIST(self.address, p_out_info_list, dw_max_buffer_count)
+    
+    def get_midi_out_device_list(self, p_out_info_list: MIDI_DEVICE_INFO, dw_max_buffer_count: int) -> int:
+        p_out_info_list = get_address(p_out_info_list)
+        
+        return FUNCTION_GAME_CONTROLLER_GET_MIDI_OUT_DEVICE_LIST(self.address, p_out_info_list, dw_max_buffer_count)
+    
+    def write_note_or_control(self, type: int, b_on_off: bool, dw_key: int, dw_velocity: int) -> bool:
+        
+        return FUNCTION_GAME_CONTROLLER_WRITE_NOTE_OR_CONTROL(self.address, type, b_on_off, dw_key, dw_velocity)
     

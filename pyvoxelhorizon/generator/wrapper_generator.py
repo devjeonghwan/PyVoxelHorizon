@@ -3,11 +3,15 @@ from sctokenizer import Source, TokenType
 
 HEADER_FILE_NAMES = ["header/IGameHookController.h", "header/typedef.h", "header/math.inl", "header/patch.h"]
 GENERATE_TARGETS = [
+    # Type Define
+    "WEB_CLIENT_HANDLE",
+
     # Enum
     "VH_EDIT_MODE", 
     "PLANE_AXIS_TYPE",
     "RENDER_MODE",
     "CREATE_VOXEL_OBJECT_ERROR",
+    "MIDI_SIGNAL_TYPE",
 
     # Interface
     "IVHController", 
@@ -35,7 +39,8 @@ GENERATE_TARGETS = [
     "IVERTEX",
     "IVERTEX_QUAD",
 
-    "MIDI_NOTE"
+    "MIDI_NOTE",
+    "MIDI_DEVICE_INFO",
 ]
 
 IGNORES = ["SetOnDeleteVoxelObjectFunc"]
@@ -144,6 +149,7 @@ STRUCT_SOURCE_PREFIX += "\n"
 STRUCT_SOURCE_PREFIX += "from " + UTIL_MODULE_PATH + " import *" + "\n"
 STRUCT_SOURCE_PREFIX += "from " + ENUM_MODULE_PATH + " import *" + "\n"
 
+parsed_typedefs = []
 parsed_enums = []
 parsed_interfaces = []
 parsed_structs = []
@@ -178,6 +184,20 @@ for header_file_name in HEADER_FILE_NAMES:
     source = Source.from_file(header_file_name, lang='cpp')
     tokens = source.tokenize()
 
+    for index in range(1, len(tokens)):
+        first_token = tokens[index - 1]
+        second_token = tokens[index]
+
+        if first_token.token_type == TokenType.OPERATOR:
+            if first_token.token_value == 'and' or first_token.token_value == 'or' or first_token.token_value == 'xor' or first_token.token_value == 'not':
+
+                if second_token.token_type == TokenType.IDENTIFIER:
+                    # Merge
+                    second_token.token_value = first_token.token_value + second_token.token_value
+
+                    first_token.token_type = TokenType.IDENTIFIER
+                    first_token.token_value = ""
+
     cursor = 0
 
     while True:
@@ -189,7 +209,27 @@ for header_file_name in HEADER_FILE_NAMES:
         token_value = token.token_value
 
         # Enum Parse
-        if token_value == 'enum':
+        if token_value == 'typedef':
+            typedef_tokens = []
+
+            while True:
+                cursor += 1
+
+                if cursor >= len(tokens):
+                    break
+
+                token = tokens[cursor]
+                token_type = token.token_type
+                token_value = token.token_value
+
+                if token_type == TokenType.SPECIAL_SYMBOL and token_value == ';':
+                    add_type_with_tokens(parsed_typedefs, typedef_tokens)
+                    break
+                else:
+                    typedef_tokens.append(token)
+
+            continue
+        elif token_value == 'enum':
             cursor += 1
             name = tokens[cursor].token_value
 
@@ -459,16 +499,25 @@ for header_file_name in HEADER_FILE_NAMES:
 
                 parsed_structs.append(parsed_struct)
             continue
+        
         cursor += 1
 
-
+target_typedefs = []
 target_enums = []
 target_interfaces = []
 target_structs = []
 
+target_typedef_names = []
 target_enum_names = []
 target_interface_names = []
 target_struct_names = []
+
+for target_name in GENERATE_TARGETS:
+    for parsed_typedef in parsed_typedefs:
+        if parsed_typedef['name'] == target_name:
+            target_typedefs.append(parsed_typedef)
+            target_typedef_names.append(parsed_typedef['name'])
+            break
 
 for target_name in GENERATE_TARGETS:
     for parsed_enum in parsed_enums:
@@ -497,6 +546,13 @@ def convert_name_with_hint(name):
             return HINTS[name]['name']
         
     return name
+
+def convert_typedefs(type_name):
+    for target_typedef in target_typedefs:
+        if type_name in target_typedef['name']:
+            return type_name.replace(target_typedef['name'], target_typedef['type'])
+        
+    return type_name
 
 def is_hint_name(name):
     for hint_name in HINTS:
@@ -570,6 +626,7 @@ def ignore_multiply_one(value, multiplier):
     return value + " * " + str(multiplier)
 
 def convert_raw_type_to_python_ctype(raw_type):
+    raw_type = convert_typedefs(raw_type)
     multiplier = 1
 
     if "[" in raw_type:
@@ -584,6 +641,9 @@ def convert_raw_type_to_python_ctype(raw_type):
 
     if raw_type == "void":
         return "None"
+    
+    elif raw_type == "unsignedchar":
+        return ignore_multiply_one("ctypes.c_ubyte", multiplier)
     
     elif raw_type == "CHAR":
         return ignore_multiply_one("wintypes.CHAR", multiplier)
@@ -670,11 +730,16 @@ def convert_raw_arguments_to_python_ctypes(raw_arguments):
     return python_ctypes
 
 def convert_raw_type_to_python_type_info(raw_type, is_return_type: bool = False):
+    raw_type = convert_typedefs(raw_type)
+
     if raw_type == "void":
         return {"type": "None", "from_statement": "{0}", "to_statement": "{0}"}
     elif raw_type == "void*":
         return {"type": "int", "from_statement": "{0}", "to_statement": "{0}"}
     elif raw_type == "void**":
+        return {"type": "int", "from_statement": "{0}", "to_statement": "{0}"}
+    
+    elif raw_type == "unsignedchar":
         return {"type": "int", "from_statement": "{0}", "to_statement": "{0}"}
     
     elif raw_type == "CHAR":
