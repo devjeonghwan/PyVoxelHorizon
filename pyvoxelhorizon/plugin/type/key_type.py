@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import IntEnum
 
 
-class KeyType(Enum):
+class KeyType(IntEnum):
     LEFT_BUTTON = 0x01,
     RIGHT_BUTTON = 0x02,
     CANCEL = 0x03,
@@ -256,4 +256,4 @@ class KeyType(Enum):
     ZOOM = 0xFB,
     NONAME = 0xFC,
     PA1 = 0xFD,
-    OEM_CLEAR = 0xFE,
+    OEM_CLEAR = 0xFE
