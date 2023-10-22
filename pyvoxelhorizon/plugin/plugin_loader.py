@@ -48,7 +48,7 @@ class PluginLoader(GameHook):
         for plugin_info in self.plugin_infos:
             importlib.reload(plugin_info.module)
 
-            plugin = plugin_info.create_plugin(Game(self.game_controller))
+            plugin = plugin_info.create_plugin(Game(self.game_controller, self.network_layer))
             plugin.on_create()
 
             self.plugins.append(plugin)
