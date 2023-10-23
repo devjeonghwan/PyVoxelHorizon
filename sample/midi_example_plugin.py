@@ -39,10 +39,10 @@ class MidiExamplePlugin(Plugin, ABC):
             if midi_event.is_channel():
                 if midi_event.status == umidiparser.NOTE_OFF or (midi_event.status == umidiparser.NOTE_ON and midi_event.velocity == 0):
                     self.game.print_line_to_system_dialog("Off {0}".format(midi_event.note))
-                    self.game.game_controller.note_off(midi_event.channel, midi_event.note, 0)
+                    self.game.game_controller.midi_write_note(midi_event.channel, False, midi_event.note, 0)
                 elif midi_event.status == umidiparser.NOTE_ON:
                     self.game.print_line_to_system_dialog("On {0} {1}".format(midi_event.note, midi_event.velocity))
-                    self.game.game_controller.note_on(midi_event.channel, midi_event.note, midi_event.velocity)
+                    self.game.game_controller.midi_write_note(midi_event.channel, True, midi_event.note, midi_event.velocity)
                 elif midi_event.status == umidiparser.PROGRAM_CHANGE:
                     self.game.print_line_to_system_dialog("Program {0} {1}".format(midi_event.status, midi_event.program))
                     self.game.game_controller.midi_change_program(midi_event.channel, midi_event.program)
@@ -56,6 +56,14 @@ class MidiExamplePlugin(Plugin, ABC):
             for midi_event in umidiparser.MidiFile(os.path.join(self.directory_path, "98_OVER.mid"), reuse_event_object=False):
                 self.midi_events.append(midi_event)
 
+            self.midi_event_index = 0
+            self.midi_start_timestamp = time.time()
+            self.midi_playback = 0
+
+            return True
+        
+        if command == 'stop':
+            self.midi_events = []
             self.midi_event_index = 0
             self.midi_start_timestamp = time.time()
             self.midi_playback = 0

@@ -13,10 +13,6 @@ class Game:
         self.game_controller = game_controller
         self.network_layer = network_layer
 
-    def note_midi(self, color: Color, message: str):
-        self.game_controller.write_note_or_control(MIDI_SIGNAL_TYPE_NOTE, True, 1, 30)
-        self.game_controller.write_note_or_control(MIDI_SIGNAL_TYPE_NOTE, False, 1, 30)
-
     def print_text_to_system_dialog(self, message: str, color: Color = Color(255, 255, 255)):
         self.game_controller.write_text_to_system_dlg_w(color.get_argb(), message)
 
