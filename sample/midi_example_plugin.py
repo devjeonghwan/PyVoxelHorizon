@@ -63,6 +63,18 @@ class MidiExamplePlugin(Plugin, ABC):
             return True
         
         if command == 'stop':
+            off_checks = {}
+
+            for midi_event in self.midi_events:
+                if midi_event.is_channel() and midi_event.status == umidiparser.NOTE_ON:
+                    if midi_event.channel not in off_checks:
+                        off_checks[midi_event.channel] = {}
+
+                    if midi_event.note not in off_checks[midi_event.channel]:
+                        off_checks[midi_event.channel][midi_event.note] = True
+
+                        self.game.game_controller.midi_write_note(midi_event.channel, False, midi_event.note, 0)
+
             self.midi_events = []
             self.midi_event_index = 0
             self.midi_start_timestamp = time.time()
