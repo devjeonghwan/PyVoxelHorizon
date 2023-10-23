@@ -115,7 +115,7 @@ def find_similar_voxel_color(red: int, green: int, blue: int) -> VoxelColor:
 
 
 def get_voxel_color(index):
-    if index > 0 or index <= len(VOXEL_COLOR_PALETTE):
+    if index < 0 or index >= len(VOXEL_COLOR_PALETTE):
         return VOXEL_COLOR_PALETTE[0]
 
     return VOXEL_COLOR_PALETTE[index]
