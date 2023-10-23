@@ -40,7 +40,7 @@ flowchart TD
 ## How to development Plugin without C++ Build?
 1. Install [Python 3.11](https://www.python.org/downloads/release/python-3110/) for all users
 2. Download `PyVoxelHorizon_{Build Number}.zip` from [releases](https://github.com/devjeonghwan/PyVoxelHorizon/releases) and extract all files to `{VOXEL HORIZON Path}/Plugin/bin/`
-3. Write plugin code into `{VOXEL HORIZON Path}/Plugin/bin/PyVoxelHorizon/plugins`
+3. Write plugin code and Save into `{VOXEL HORIZON Path}/Plugin/bin/PyVoxelHorizon/plugins`
     - [Basic Plugin](sample/basic_plugin.py)
     - [MIDI Player Plugin](sample/midi_example_plugin.py)
 4. Run VOXEL HORIZON
