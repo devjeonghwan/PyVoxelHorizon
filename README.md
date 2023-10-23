@@ -62,7 +62,7 @@ Sorry, Not ready yet.
 Sorry, Not ready yet.
 
 ## Troubleshoot
-### `ModuleNotFoundError` occurred while running the plugin.
+### `ModuleNotFoundError` occurred when running the plugin.
 ![image](https://github.com/devjeonghwan/PyVoxelHorizon/assets/13144936/22c625b8-d322-4723-815c-ced231e2efab)
 
 The Python moule that the plugin uses is not installed.
