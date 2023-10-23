@@ -45,8 +45,9 @@ flowchart TD
     - [MIDI Player Plugin](sample/midi_example_plugin.py)
 4. Run VOXEL HORIZON
 5. Press the '`' key to open the console
-6. Enter the `load_plugin PyVoxelHorizon_x64_Release.dll`
+6. Enter the `load_plugin PyVoxelHorizon_x64_Release.dll` command
 7. Or, You can also uses command arguments. See [official document](https://github.com/megayuchi/VH_SDK)
+8. And, You can reload all python plugins at runtime using `reload_plugins` command
 
 ## How to development `PyVoxelHorizon Wrapper Plugin`?
 1. Install [Python 3.11](https://www.python.org/downloads/release/python-3110/) with enabled `development/embedded` options for all users
