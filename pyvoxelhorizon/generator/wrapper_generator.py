@@ -1141,6 +1141,7 @@ for target_interface in target_interfaces:
         output_source += python_interface_function['global_name'] + " = None" + "\n"
 
     output_source += "\n"
+    output_source += "\n"
     output_source += "def " + python_global_load_functions_name + "(function_table_address: int):" + "\n"
     output_source += "    global IS_FUNCTIONS_LOADED\n"
     output_source += "    \n"
@@ -1169,6 +1170,7 @@ for target_interface in target_interfaces:
     output_source += "        " + "\n"
     output_source += "    IS_FUNCTIONS_LOADED = True" + "\n"
 
+    output_source += "\n"
     output_source += "\n"
 
     output_source += "class " + python_interface_name + "(AddressObject):\n"
@@ -1206,6 +1208,7 @@ for target_interface in target_interfaces:
 
         output_source += ":" + "\n"
 
+        has_statement_transform = False
         for argument_index in range(len(python_argument_names)):
             python_argument_type_info = python_argument_type_infos[argument_index]
             python_argument_name = python_argument_names[argument_index]
@@ -1213,12 +1216,13 @@ for target_interface in target_interfaces:
             python_from_statement = python_argument_type_info['from_statement'].format(python_argument_name)
 
             if python_from_statement != python_argument_name:
+                has_statement_transform = True
                 output_source += "        " + python_argument_name + " = " + python_from_statement + "\n"
 
-        output_source += "        " + "\n"
+        if has_statement_transform:
+            output_source += "        " + "\n"
 
-        calling_function = python_interface_function['global_name'] + "(" + (
-            ", ".join(["self.address"] + python_argument_names)) + ")"
+        calling_function = python_interface_function['global_name'] + "(" + (", ".join(["self.address"] + python_argument_names)) + ")"
         output_source += "        return " + python_return_type_info['to_statement'].format(calling_function) + "\n"
 
         output_source += "    " + "\n"

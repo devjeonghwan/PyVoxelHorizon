@@ -17,6 +17,7 @@ FUNCTION_NETWORK_LAYER_SEND_REQUESTREMOVEVOXEL = None
 FUNCTION_NETWORK_LAYER_SEND_REQUESTSETVOXELCOLOR = None
 FUNCTION_NETWORK_LAYER_SEND_REQUESTRESIZEVOXELDETAIL = None
 
+
 def load_functions_of_network_layer(function_table_address: int):
     global IS_FUNCTIONS_LOADED
     
@@ -56,6 +57,7 @@ def load_functions_of_network_layer(function_table_address: int):
     FUNCTION_NETWORK_LAYER_SEND_REQUESTRESIZEVOXELDETAIL = ctypes.CFUNCTYPE(None, wintypes.LPVOID, wintypes.LPVOID, wintypes.BYTE)(function_address)
         
     IS_FUNCTIONS_LOADED = True
+
 
 class NetworkLayer(AddressObject):
     def __init__(self, address: int):

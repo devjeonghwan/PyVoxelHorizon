@@ -17,7 +17,7 @@ FUNCTION_VOXEL_OBJECT_LITE_GET_COLOR_TABLE = None
 FUNCTION_VOXEL_OBJECT_LITE_SET_COLOR_TABLE = None
 FUNCTION_VOXEL_OBJECT_LITE_SET_COLOR_TABLE_WITH_STREAM = None
 FUNCTION_VOXEL_OBJECT_LITE_SET_COMPRESSED_COLOR_TABLE2X2X2 = None
-FUNCTION_VOXEL_OBJECT_LITE_SCLUPT_TO_ROUND_BOX = None
+FUNCTION_VOXEL_OBJECT_LITE_SCULPT_TO_ROUND_BOX = None
 FUNCTION_VOXEL_OBJECT_LITE_SCULPT_TO_SPHERE = None
 FUNCTION_VOXEL_OBJECT_LITE_UPDATE_GEOMETRY = None
 FUNCTION_VOXEL_OBJECT_LITE_UPDATE_LIGHTING = None
@@ -49,6 +49,7 @@ FUNCTION_VOXEL_OBJECT_LITE_SET_SELECTED = None
 FUNCTION_VOXEL_OBJECT_LITE_CLEAR_SELECTED = None
 FUNCTION_VOXEL_OBJECT_LITE_SET_DESTROYABLE = None
 FUNCTION_VOXEL_OBJECT_LITE_IS_DESTROYABLE = None
+
 
 def load_functions_of_voxel_object_lite(function_table_address: int):
     global IS_FUNCTIONS_LOADED
@@ -85,8 +86,8 @@ def load_functions_of_voxel_object_lite(function_table_address: int):
     FUNCTION_VOXEL_OBJECT_LITE_SET_COMPRESSED_COLOR_TABLE2X2X2 = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD, wintypes.UINT)(function_address)
     
     function_address = read_memory(function_table_address + 56, ctypes.c_void_p)
-    global FUNCTION_VOXEL_OBJECT_LITE_SCLUPT_TO_ROUND_BOX
-    FUNCTION_VOXEL_OBJECT_LITE_SCLUPT_TO_ROUND_BOX = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID)(function_address)
+    global FUNCTION_VOXEL_OBJECT_LITE_SCULPT_TO_ROUND_BOX
+    FUNCTION_VOXEL_OBJECT_LITE_SCULPT_TO_ROUND_BOX = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID)(function_address)
     
     function_address = read_memory(function_table_address + 64, ctypes.c_void_p)
     global FUNCTION_VOXEL_OBJECT_LITE_SCULPT_TO_SPHERE
@@ -214,6 +215,7 @@ def load_functions_of_voxel_object_lite(function_table_address: int):
         
     IS_FUNCTIONS_LOADED = True
 
+
 class VoxelObjectLite(AddressObject):
     def __init__(self, address: int):
         super().__init__(address)
@@ -222,11 +224,9 @@ class VoxelObjectLite(AddressObject):
         load_functions_of_voxel_object_lite(function_table_address)
     
     def get_voxel_object_ptr(self, pp_out_voxel_obj: int) -> None:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_GET_VOXEL_OBJECT_PTR(self.address, pp_out_voxel_obj)
     
     def get_voxel_object_body_ptr(self, pp_out_voxel_obj: int) -> None:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_GET_VOXEL_OBJECT_BODY_PTR(self.address, pp_out_voxel_obj)
     
     def get_voxel_object_property(self, p_out_property: VoxelObjectProperty) -> None:
@@ -250,23 +250,18 @@ class VoxelObjectLite(AddressObject):
         return FUNCTION_VOXEL_OBJECT_LITE_SET_COLOR_TABLE_WITH_STREAM(self.address, p_color_table, width_depth_height)
     
     def set_compressed_color_table2x2x2(self, p_compressed_data: int, dw_size: int, width_depth_height: int) -> bool:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_SET_COMPRESSED_COLOR_TABLE2X2X2(self.address, p_compressed_data, dw_size, width_depth_height)
     
-    def sclupt_to_round_box(self) -> bool:
-        
-        return FUNCTION_VOXEL_OBJECT_LITE_SCLUPT_TO_ROUND_BOX(self.address)
+    def sculpt_to_round_box(self) -> bool:
+        return FUNCTION_VOXEL_OBJECT_LITE_SCULPT_TO_ROUND_BOX(self.address)
     
     def sculpt_to_sphere(self) -> bool:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_SCULPT_TO_SPHERE(self.address)
     
     def update_geometry(self, b_immediate: bool) -> None:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_UPDATE_GEOMETRY(self.address, b_immediate)
     
     def update_lighting(self) -> None:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_UPDATE_LIGHTING(self.address)
     
     def get_voxel(self, pb_out_value: wintypes.BOOL, x: int, y: int, z: int) -> bool:
@@ -301,7 +296,6 @@ class VoxelObjectLite(AddressObject):
         return FUNCTION_VOXEL_OBJECT_LITE_SET_BIT_TABLE(self.address, p_bit_table, width_depth_height, b_immediate_update)
     
     def clear_and_add_voxel(self, x: int, y: int, z: int, b_immediate_update: bool) -> bool:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_CLEAR_AND_ADD_VOXEL(self.address, x, y, z, b_immediate_update)
     
     def add_voxel_with_auto_resize(self, p_out_width_depth_height: wintypes.UINT, x: int, y: int, z: int, b_color_index: int, req_width_depth_height: int) -> bool:
@@ -316,7 +310,6 @@ class VoxelObjectLite(AddressObject):
         return FUNCTION_VOXEL_OBJECT_LITE_REMOVE_VOXEL_WITH_AUTO_RESIZE(self.address, p_out_width_depth_height, pb_out_obj_deleted, x, y, z, req_width_depth_height)
     
     def set_voxel_color(self, x: int, y: int, z: int, b_color_index: int) -> bool:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_SET_VOXEL_COLOR(self.address, x, y, z, b_color_index)
     
     def set_voxel_color_with_auto_resize(self, p_out_width_depth_height: wintypes.UINT, x: int, y: int, z: int, b_color_index: int, req_width_depth_height: int) -> bool:
@@ -357,46 +350,35 @@ class VoxelObjectLite(AddressObject):
         return FUNCTION_VOXEL_OBJECT_LITE_CALC_CENTER_POINT(self.address, pv3_out_point, x, y, z)
     
     def set_palette_with_random(self, dw_max_color_num: int) -> None:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_SET_PALETTE_WITH_RANDOM(self.address, dw_max_color_num)
     
     def set_palette_with_indexed_color(self, index: int) -> None:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_SET_PALETTE_WITH_INDEXED_COLOR(self.address, index)
     
     def gradation_color_table(self, b_color_index: int, b_last_color_index: int) -> None:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_GRADATION_COLOR_TABLE(self.address, b_color_index, b_last_color_index)
     
     def replace_color_index(self, b_replace_index: int, b_comparand_index: int) -> None:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_REPLACE_COLOR_INDEX(self.address, b_replace_index, b_comparand_index)
     
     def resize_width_depth_height(self, width_depth_height: int, b_immediate_update: bool) -> bool:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_RESIZE_WIDTH_DEPTH_HEIGHT(self.address, width_depth_height, b_immediate_update)
     
     def optimize_geometry(self) -> bool:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_OPTIMIZE_GEOMETRY(self.address)
     
     def optimize_voxels(self, b_immediate_update: bool) -> bool:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_OPTIMIZE_VOXELS(self.address, b_immediate_update)
     
     def set_selected(self) -> None:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_SET_SELECTED(self.address)
     
     def clear_selected(self) -> None:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_CLEAR_SELECTED(self.address)
     
     def set_destroyable(self, b_switch: bool) -> None:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_SET_DESTROYABLE(self.address, b_switch)
     
     def is_destroyable(self) -> bool:
-        
         return FUNCTION_VOXEL_OBJECT_LITE_IS_DESTROYABLE(self.address)
     

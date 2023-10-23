@@ -108,7 +108,13 @@ FUNCTION_GAME_CONTROLLER_NOTE_ON = None
 FUNCTION_GAME_CONTROLLER_NOTE_OFF = None
 FUNCTION_GAME_CONTROLLER_GET_MIDI_IN_DEVICE_LIST = None
 FUNCTION_GAME_CONTROLLER_GET_MIDI_OUT_DEVICE_LIST = None
-FUNCTION_GAME_CONTROLLER_WRITE_NOTE_OR_CONTROL = None
+FUNCTION_GAME_CONTROLLER_MIDI_WRITE_NOTE = None
+FUNCTION_GAME_CONTROLLER_MIDI_CHANGE_CONTROL = None
+FUNCTION_GAME_CONTROLLER_MIDI_CHANGE_PROGRAM = None
+FUNCTION_GAME_CONTROLLER_IS_BROADCAST_MODE = None
+FUNCTION_GAME_CONTROLLER_ENABLE_BROADCAST_MODE = None
+FUNCTION_GAME_CONTROLLER_RESET = None
+
 
 def load_functions_of_game_controller(function_table_address: int):
     global IS_FUNCTIONS_LOADED
@@ -477,10 +483,31 @@ def load_functions_of_game_controller(function_table_address: int):
     FUNCTION_GAME_CONTROLLER_GET_MIDI_OUT_DEVICE_LIST = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD)(function_address)
     
     function_address = read_memory(function_table_address + 728, ctypes.c_void_p)
-    global FUNCTION_GAME_CONTROLLER_WRITE_NOTE_OR_CONTROL
-    FUNCTION_GAME_CONTROLLER_WRITE_NOTE_OR_CONTROL = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, ctypes.c_int, wintypes.BOOL, wintypes.DWORD, wintypes.DWORD)(function_address)
+    global FUNCTION_GAME_CONTROLLER_MIDI_WRITE_NOTE
+    FUNCTION_GAME_CONTROLLER_MIDI_WRITE_NOTE = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.DWORD, wintypes.BOOL, wintypes.DWORD, wintypes.DWORD)(function_address)
+    
+    function_address = read_memory(function_table_address + 736, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_MIDI_CHANGE_CONTROL
+    FUNCTION_GAME_CONTROLLER_MIDI_CHANGE_CONTROL = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.DWORD, wintypes.DWORD, wintypes.DWORD)(function_address)
+    
+    function_address = read_memory(function_table_address + 744, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_MIDI_CHANGE_PROGRAM
+    FUNCTION_GAME_CONTROLLER_MIDI_CHANGE_PROGRAM = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.DWORD, wintypes.DWORD)(function_address)
+    
+    function_address = read_memory(function_table_address + 752, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_IS_BROADCAST_MODE
+    FUNCTION_GAME_CONTROLLER_IS_BROADCAST_MODE = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID)(function_address)
+    
+    function_address = read_memory(function_table_address + 760, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_ENABLE_BROADCAST_MODE
+    FUNCTION_GAME_CONTROLLER_ENABLE_BROADCAST_MODE = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.LPVOID, wintypes.BOOL)(function_address)
+    
+    function_address = read_memory(function_table_address + 768, ctypes.c_void_p)
+    global FUNCTION_GAME_CONTROLLER_RESET
+    FUNCTION_GAME_CONTROLLER_RESET = ctypes.WINFUNCTYPE(None, wintypes.LPVOID)(function_address)
         
     IS_FUNCTIONS_LOADED = True
+
 
 class GameController(AddressObject):
     def __init__(self, address: int):
@@ -517,7 +544,6 @@ class GameController(AddressObject):
         return FUNCTION_GAME_CONTROLLER_DELETE_VOXEL_OBJECT(self.address, p_voxel_obj_lite)
     
     def delete_all_voxel_object(self) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_DELETE_ALL_VOXEL_OBJECT(self.address)
     
     def get_int_position_list_with_sphere(self, piv_out_pos_list: IntVector3, dw_max_pos_count: int, p_bs: BoundingSphere, pb_out_insufficient: wintypes.BOOL) -> int:
@@ -595,11 +621,9 @@ class GameController(AddressObject):
         return cast_address(FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_WITH_FLOAT_COORD(self.address, pv3_pos), VoxelObjectLite)
     
     def get_voxel_object_num(self) -> int:
-        
         return FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_NUM(self.address)
     
     def get_paletted_color_num(self) -> int:
-        
         return FUNCTION_GAME_CONTROLLER_GET_PALETTED_COLOR_NUM(self.address)
     
     def snap_coord(self, pv3_out_snapped_pos: Vector3, pv3_pos: Vector3) -> None:
@@ -622,19 +646,15 @@ class GameController(AddressObject):
         return FUNCTION_GAME_CONTROLLER_GET_CURSOR_VOXEL_OBJECT_POS(self.address, pv3_out_pos, piv3_out_voxel_pos)
     
     def select_cursor_voxel_object_detail(self, width_depth_height: int) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_SELECT_CURSOR_VOXEL_OBJECT_DETAIL(self.address, width_depth_height)
     
     def set_cursor_voxel_object_scale(self, f_obj_scale: float) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_SCALE(self.address, f_obj_scale)
     
     def set_cursor_voxel_object_voxel_scale(self, f_voxel_scale: float) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_VOXEL_SCALE(self.address, f_voxel_scale)
     
     def set_cursor_voxel_object_render_mode(self, mode: int) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_RENDER_MODE(self.address, mode)
     
     def get_cursor_voxel_object_propery(self, pf_out_voxel_size: ctypes.c_float) -> int:
@@ -643,11 +663,9 @@ class GameController(AddressObject):
         return FUNCTION_GAME_CONTROLLER_GET_CURSOR_VOXEL_OBJECT_PROPERY(self.address, pf_out_voxel_size)
     
     def set_cursor_voxel_object_color(self, b_color_index: int) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_SET_CURSOR_VOXEL_OBJECT_COLOR(self.address, b_color_index)
     
     def set_brush_voxel_object_color(self, b_color_index: int) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_SET_BRUSH_VOXEL_OBJECT_COLOR(self.address, b_color_index)
     
     def is_valid_voxel_object_position(self, pv3_pos: Vector3) -> bool:
@@ -768,15 +786,12 @@ class GameController(AddressObject):
         return FUNCTION_GAME_CONTROLLER_REMOVE_VOXELS_WITH_CAPSULE_BY_OBJ_LIST_AUTO_RESIZE(self.address, pv3_ray_orig, pv3_ray_dir, f_rs, pv3_obj_list, dw_obj_num, width_depth_height)
     
     def write_text_to_system_dlg_w(self, dw_color: int, *args) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_WRITE_TEXT_TO_SYSTEM_DLG_W(self.address, dw_color, *args)
     
     def set_first_voxel_object(self) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_SET_FIRST_VOXEL_OBJECT(self.address)
     
     def get_voxel_object_and_next(self) -> VoxelObjectLite:
-        
         return cast_address(FUNCTION_GAME_CONTROLLER_GET_VOXEL_OBJECT_AND_NEXT(self.address), VoxelObjectLite)
     
     def create_voxel_point_list_with_world_aabb(self, pv3_out_point_list: Vector3, dw_max_buffer_count: int, p_aabb: AABB, p_clip_plane: Plane, width_depth_height: int) -> int:
@@ -841,39 +856,30 @@ class GameController(AddressObject):
         return FUNCTION_GAME_CONTROLLER_CLEAR_SELECTED_VOXEL(self.address, p_voxel_obj_lite, x, y, z)
     
     def clear_selected_all(self) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_CLEAR_SELECTED_ALL(self.address)
     
     def write_file(self, wch_file_name: str) -> bool:
-        
         return FUNCTION_GAME_CONTROLLER_WRITE_FILE(self.address, wch_file_name)
     
     def read_file(self, wch_file_name: str, b_delayed_update: bool, b_lighting: bool) -> bool:
-        
         return FUNCTION_GAME_CONTROLLER_READ_FILE(self.address, wch_file_name, b_delayed_update, b_lighting)
     
     def begin_write_text_to_console(self) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_BEGIN_WRITE_TEXT_TO_CONSOLE(self.address)
     
     def write_text_to_console(self, wch_txt: str, i_len: int, dw_color: int) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_WRITE_TEXT_TO_CONSOLE(self.address, wch_txt, i_len, dw_color)
     
     def end_write_text_to_console(self) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_END_WRITE_TEXT_TO_CONSOLE(self.address)
     
     def get_current_color_index(self) -> int:
-        
         return FUNCTION_GAME_CONTROLLER_GET_CURRENT_COLOR_INDEX(self.address)
     
     def get_current_edit_mode(self) -> int:
-        
         return FUNCTION_GAME_CONTROLLER_GET_CURRENT_EDIT_MODE(self.address)
     
     def get_current_plane_type(self) -> int:
-        
         return FUNCTION_GAME_CONTROLLER_GET_CURRENT_PLANE_TYPE(self.address)
     
     def get_selected_voxel_obj_desc(self, p_out_voxel_obj_desc: VoxelDescriptionLite) -> bool:
@@ -891,27 +897,21 @@ class GameController(AddressObject):
         return FUNCTION_GAME_CONTROLLER_GET_CURSOR_STATUS(self.address, pv3_out_cursor_obj_pos, piv_out_cursor_voxel_pos, pui_out_width_depth_height, pf_out_cursor_voxel_size, pb_out_color_index)
     
     def is_updating(self) -> bool:
-        
         return FUNCTION_GAME_CONTROLLER_IS_UPDATING(self.address)
     
     def update_visibility_all(self) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_UPDATE_VISIBILITY_ALL(self.address)
     
     def enable_destroyable_all(self, b_switch: bool) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_ENABLE_DESTROYABLE_ALL(self.address, b_switch)
     
     def enable_auto_restore_all(self, b_switch: bool) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_ENABLE_AUTO_RESTORE_ALL(self.address, b_switch)
     
     def browse_web(self, sz_url: str, dw_width: int, dw_height: int, b_user_shared_memory: bool) -> int:
-        
         return FUNCTION_GAME_CONTROLLER_BROWSE_WEB(self.address, sz_url, dw_width, dw_height, b_user_shared_memory)
     
     def close_web(self, p_handle: int) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_CLOSE_WEB(self.address, p_handle)
     
     def get_web_image(self, p_out_bits32: wintypes.BYTE, dw_width: int, dw_height: int, dw_dest_pitch: int, p_handle: int) -> bool:
@@ -920,15 +920,12 @@ class GameController(AddressObject):
         return FUNCTION_GAME_CONTROLLER_GET_WEB_IMAGE(self.address, p_out_bits32, dw_width, dw_height, dw_dest_pitch, p_handle)
     
     def on_web_mouse_l_button_down(self, p_handle: int, x: int, y: int, n_flags: int) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_ON_WEB_MOUSE_L_BUTTON_DOWN(self.address, p_handle, x, y, n_flags)
     
     def on_web_mouse_l_button_up(self, p_handle: int, x: int, y: int, n_flags: int) -> None:
-        
         return FUNCTION_GAME_CONTROLLER_ON_WEB_MOUSE_L_BUTTON_UP(self.address, p_handle, x, y, n_flags)
     
     def set_midi_out_device(self, wch_device_name: str) -> bool:
-        
         return FUNCTION_GAME_CONTROLLER_SET_MIDI_OUT_DEVICE(self.address, wch_device_name)
     
     def get_selected_midi_out_device(self, p_out_info: MIDI_DEVICE_INFO) -> bool:
@@ -937,7 +934,6 @@ class GameController(AddressObject):
         return FUNCTION_GAME_CONTROLLER_GET_SELECTED_MIDI_OUT_DEVICE(self.address, p_out_info)
     
     def set_midi_in_device(self, wch_device_name: str) -> bool:
-        
         return FUNCTION_GAME_CONTROLLER_SET_MIDI_IN_DEVICE(self.address, wch_device_name)
     
     def get_selected_midi_in_device(self, p_out_info: MIDI_DEVICE_INFO) -> bool:
@@ -946,19 +942,15 @@ class GameController(AddressObject):
         return FUNCTION_GAME_CONTROLLER_GET_SELECTED_MIDI_IN_DEVICE(self.address, p_out_info)
     
     def set_volume(self, channel: int, volume: int) -> bool:
-        
         return FUNCTION_GAME_CONTROLLER_SET_VOLUME(self.address, channel, volume)
     
     def set_sustain_pedal(self, channel: int, value: int) -> bool:
-        
         return FUNCTION_GAME_CONTROLLER_SET_SUSTAIN_PEDAL(self.address, channel, value)
     
     def note_on(self, channel: int, note: int, velocity: int) -> bool:
-        
         return FUNCTION_GAME_CONTROLLER_NOTE_ON(self.address, channel, note, velocity)
     
     def note_off(self, channel: int, note: int, velocity: int) -> bool:
-        
         return FUNCTION_GAME_CONTROLLER_NOTE_OFF(self.address, channel, note, velocity)
     
     def get_midi_in_device_list(self, p_out_info_list: MIDI_DEVICE_INFO, dw_max_buffer_count: int) -> int:
@@ -971,7 +963,21 @@ class GameController(AddressObject):
         
         return FUNCTION_GAME_CONTROLLER_GET_MIDI_OUT_DEVICE_LIST(self.address, p_out_info_list, dw_max_buffer_count)
     
-    def write_note_or_control(self, type: int, b_on_off: bool, dw_key: int, dw_velocity: int) -> bool:
-        
-        return FUNCTION_GAME_CONTROLLER_WRITE_NOTE_OR_CONTROL(self.address, type, b_on_off, dw_key, dw_velocity)
+    def midi_write_note(self, dw_channel: int, b_on_off: bool, dw_key: int, dw_velocity: int) -> bool:
+        return FUNCTION_GAME_CONTROLLER_MIDI_WRITE_NOTE(self.address, dw_channel, b_on_off, dw_key, dw_velocity)
+    
+    def midi_change_control(self, dw_channel: int, dw_controller: int, dw_control_value: int) -> bool:
+        return FUNCTION_GAME_CONTROLLER_MIDI_CHANGE_CONTROL(self.address, dw_channel, dw_controller, dw_control_value)
+    
+    def midi_change_program(self, dw_channel: int, dw_program: int) -> bool:
+        return FUNCTION_GAME_CONTROLLER_MIDI_CHANGE_PROGRAM(self.address, dw_channel, dw_program)
+    
+    def is_broadcast_mode(self) -> bool:
+        return FUNCTION_GAME_CONTROLLER_IS_BROADCAST_MODE(self.address)
+    
+    def enable_broadcast_mode(self, b_switch: bool) -> bool:
+        return FUNCTION_GAME_CONTROLLER_ENABLE_BROADCAST_MODE(self.address, b_switch)
+    
+    def reset(self) -> None:
+        return FUNCTION_GAME_CONTROLLER_RESET(self.address)
     
