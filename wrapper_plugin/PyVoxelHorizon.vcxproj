@@ -107,7 +107,7 @@
       <ModuleDefinitionFile>PyVoxelHorizon.def</ModuleDefinitionFile>
       <OutputFile>$(VOXEL_HORIZON_PATH)\Plugin\bin\$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(PYTHON_PATH)\libs</AdditionalLibraryDirectories>
-      <AdditionalDependencies>python3_d.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>python311.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -150,7 +150,7 @@
       <ModuleDefinitionFile>PyVoxelHorizon.def</ModuleDefinitionFile>
       <OutputFile>$(VOXEL_HORIZON_PATH)\Plugin\bin\$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(PYTHON_PATH)\libs</AdditionalLibraryDirectories>
-      <AdditionalDependencies>python3_d.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>python311.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
