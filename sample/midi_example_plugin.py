@@ -11,8 +11,6 @@ from pyvoxelhorizon.plugin.type import *
 from pyvoxelhorizon.plugin.util import *
 
 PLUGIN_NAME = "MidiExamplePlugin"
-TARGET_CHANNEL = 11
-
 
 class MidiExamplePlugin(Plugin, ABC):
     midi_events: List[umidiparser.MidiEvent] = []
@@ -38,16 +36,16 @@ class MidiExamplePlugin(Plugin, ABC):
 
             self.midi_playback += event_delta_ms
 
-            if midi_event.is_channel() and midi_event.channel == TARGET_CHANNEL:
+            if midi_event.is_channel():
                 if midi_event.status == umidiparser.NOTE_OFF or (midi_event.status == umidiparser.NOTE_ON and midi_event.velocity == 0):
                     self.game.print_line_to_system_dialog("Off {0}".format(midi_event.note))
-                    self.game.game_controller.write_note_or_control(MIDI_SIGNAL_TYPE_CONTROL, False, midi_event.note, 0)
+                    self.game.game_controller.note_off(midi_event.channel, midi_event.note, 0)
                 elif midi_event.status == umidiparser.NOTE_ON:
                     self.game.print_line_to_system_dialog("On {0} {1}".format(midi_event.note, midi_event.velocity))
-                    self.game.game_controller.write_note_or_control(MIDI_SIGNAL_TYPE_NOTE, True, midi_event.note, midi_event.velocity)
+                    self.game.game_controller.note_on(midi_event.channel, midi_event.note, midi_event.velocity)
                 elif midi_event.status == umidiparser.PROGRAM_CHANGE:
                     self.game.print_line_to_system_dialog("Program {0} {1}".format(midi_event.status, midi_event.program))
-                    self.game.game_controller.write_note_or_control(MIDI_SIGNAL_TYPE_CONTROL, True, midi_event.status, midi_event.program)
+                    self.game.game_controller.midi_change_program(midi_event.channel, midi_event.program)
 
             self.midi_event_index += 1
 
