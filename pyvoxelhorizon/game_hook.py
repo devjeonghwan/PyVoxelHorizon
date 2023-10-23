@@ -35,22 +35,10 @@ class GameHook:
     def on_mouse_wheel(self, wheel: int) -> bool:
         return False
 
-    def on_console_command(self, command: str) -> bool:
-        return False
-
     def on_key_down(self, key: int) -> bool:
         return False
 
     def on_key_up(self, key: int) -> bool:
-        return False
-
-    def on_key_down_func(self, key: int) -> bool:
-        return False
-
-    def on_key_down_control_func(self, key: int) -> bool:
-        return False
-
-    def on_key_down_func(self, key: int) -> bool:
         return False
 
     def on_character_unicode(self, key: int) -> bool:
@@ -114,4 +102,16 @@ class GameHook:
         return False
 
     def on_pad_y_release(self) -> bool:
+        return False
+
+    def on_key_down_func(self, key: int) -> bool:
+        return False
+
+    def on_key_down_control_func(self, key: int) -> bool:
+        return False
+
+    def on_console_command(self, command: str) -> bool:
+        return False
+
+    def on_midi_input(self, midi_note_address: str) -> bool:
         return False

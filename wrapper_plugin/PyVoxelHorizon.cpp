@@ -224,6 +224,11 @@ PyVoxelHorizon::~PyVoxelHorizon()
         Py_DECREF(this->m_pPythonOnPreConsoleCommand);
         this->m_pPythonOnPreConsoleCommand = NULL;
     }
+
+    if (this->m_pPythonOnMidiInput != NULL) {
+        Py_DECREF(this->m_pPythonOnMidiInput);
+        this->m_pPythonOnMidiInput = NULL;
+    }
 }
 
 bool PyVoxelHorizon::InitializePython(const WCHAR* wchPyVoxelHorizonPath) {
@@ -366,6 +371,8 @@ bool PyVoxelHorizon::InitializePython(const WCHAR* wchPyVoxelHorizonPath) {
     this->m_pPythonOnKeyDownCtrlFunc = PyObject_GetAttrStringIfExists(this->m_pPythonGameHook, "on_key_down_control_func");
 
     this->m_pPythonOnPreConsoleCommand = PyObject_GetAttrStringIfExists(this->m_pPythonGameHook, "on_console_command");
+
+    this->m_pPythonOnMidiInput = PyObject_GetAttrStringIfExists(this->m_pPythonGameHook, "on_midi_input");
 
     this->m_IsPythonInitialized = true;
 
@@ -1409,6 +1416,31 @@ BOOL __stdcall PyVoxelHorizon::OnPreConsoleCommand(const WCHAR* wchCmd, DWORD dw
     Py_DECREF(pPythonReturnValue);
     Py_DECREF(pPythonArgument);
     Py_DECREF(pPythonCmd);
+
+    return returnValue;
+}
+
+
+BOOL __stdcall PyVoxelHorizon::OnMidiInput(const MIDI_NOTE_L* pNote) {
+    if (!this->m_IsPythonInitialized || this->m_pPythonOnMidiInput == NULL) {
+        return false;
+    }
+
+    PyObject* pPythonMidiNoteAddress = PyLong_FromUnsignedLongLong((PyAddress)pNote);
+    PyObject* pPythonArgument = PyTuple_Pack(1, pPythonMidiNoteAddress);
+    PyObject* pPythonReturnValue = PyObject_CallObject(this->m_pPythonOnMidiInput, pPythonArgument);
+
+    if (pPythonReturnValue == NULL)
+    {
+        this->ShowPythonException();
+        return false;
+    }
+
+    bool returnValue = PyObject_IsTrue(pPythonReturnValue);
+
+    Py_DECREF(pPythonReturnValue);
+    Py_DECREF(pPythonArgument);
+    Py_DECREF(pPythonMidiNoteAddress);
 
     return returnValue;
 }
