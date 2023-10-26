@@ -29,7 +29,7 @@ MIDI_NOTE_IMAGE_BACKGROUND_COLOR = 11
 MIDI_NOTE_IMAGE_CHANNEL_COLORS = [7, 18, 24, 27]
 
 
-def render_midi_notes(midi_file: umidiparser.MidiFile, rescale_ratio: float):
+def render_midi_notes(midi_file: umidiparser.MidiFile, rescale_ratio: float, buffer_for_y: int = 0):
     full_duration = 0
 
     for midi_event in midi_file:
@@ -64,7 +64,7 @@ def render_midi_notes(midi_file: umidiparser.MidiFile, rescale_ratio: float):
                         "velocity": midi_event.velocity,
                     }
 
-    image = numpy.zeros([MIDI_NOTE_IMAGE_NOTE_RANGE, int(full_duration * rescale_ratio), len(midi_channel_note_status_map.keys())], dtype=numpy.uint8)
+    image = numpy.zeros([MIDI_NOTE_IMAGE_NOTE_RANGE, int(full_duration * rescale_ratio) + buffer_for_y, len(midi_channel_note_status_map.keys())], dtype=numpy.uint8)
 
     midi_channel_note_status_map_keys = list(midi_channel_note_status_map.keys())
 
@@ -121,15 +121,6 @@ class MidiExamplePlugin(Plugin, ABC):
         midi_note_image_crop_end = midi_note_image_crop_start + MIDI_NOTE_IMAGE_TIMING_RANGE
         midi_note_image_crop = self.midi_note_image[:, midi_note_image_crop_start:midi_note_image_crop_end, :]
 
-        for note_index in range(MIDI_NOTE_IMAGE_NOTE_RANGE):
-            for timing_index in range(MIDI_NOTE_IMAGE_TIMING_RANGE - midi_note_image_crop.shape[1]):
-                voxel_editor.set_voxel_color(
-                    MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + (note_index * 50),
-                    MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + ((MIDI_NOTE_IMAGE_TIMING_RANGE - (timing_index + 1)) * 50),
-                    MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Z,
-                    get_voxel_color(MIDI_NOTE_IMAGE_BACKGROUND_COLOR)
-                )
-
         if self.midi_note_image_previous is not None:
             changed_indices = numpy.where(midi_note_image_crop != self.midi_note_image_previous)
             changed_count = len(changed_indices[0])
@@ -182,7 +173,7 @@ class MidiExamplePlugin(Plugin, ABC):
     def on_command(self, command: str) -> bool:
         if command == 'play':
             midi_file = umidiparser.MidiFile(os.path.join(self.directory_path, "98_OVER.mid"), reuse_event_object=False)
-            self.midi_note_image = render_midi_notes(midi_file, MIDI_NOTE_IMAGE_SCALE_RATIO)
+            self.midi_note_image = render_midi_notes(midi_file, MIDI_NOTE_IMAGE_SCALE_RATIO, buffer_for_y=MIDI_NOTE_IMAGE_TIMING_RANGE)
             self.midi_events = []
 
             for midi_event in midi_file:
