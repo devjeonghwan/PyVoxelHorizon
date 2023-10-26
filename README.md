@@ -40,13 +40,14 @@ flowchart TD
 ## How to development Plugin without C++ Build?
 1. Install [Python 3.11](https://www.python.org/downloads/release/python-3110/) for all users
 2. Download `PyVoxelHorizon_{Build Number}.zip` from [releases](https://github.com/devjeonghwan/PyVoxelHorizon/releases) and extract all files to `{VOXEL HORIZON Path}/Plugin/bin/`
-3. Write plugin code into `{VOXEL HORIZON Path}/Plugin/bin/PyVoxelHorizon/plugins`
+3. Write plugin code and Save into `{VOXEL HORIZON Path}/Plugin/bin/PyVoxelHorizon/plugins`
     - [Basic Plugin](sample/basic_plugin.py)
     - [MIDI Player Plugin](sample/midi_example_plugin.py)
 4. Run VOXEL HORIZON
 5. Press the '`' key to open the console
-6. Enter the `load_plugin PyVoxelHorizon_x64_Release.dll`
+6. Enter the `load_plugin PyVoxelHorizon_x64_Release.dll` command
 7. Or, You can also uses command arguments. See [official document](https://github.com/megayuchi/VH_SDK)
+8. And, You can reload all python plugins at runtime using `reload_plugins` command
 
 ## How to development `PyVoxelHorizon Wrapper Plugin`?
 1. Install [Python 3.11](https://www.python.org/downloads/release/python-3110/) with enabled `development/embedded` options for all users
@@ -62,7 +63,7 @@ Sorry, Not ready yet.
 Sorry, Not ready yet.
 
 ## Troubleshoot
-### `ModuleNotFoundError` occurred while running the plugin.
+### `ModuleNotFoundError` occurred when running the plugin.
 ![image](https://github.com/devjeonghwan/PyVoxelHorizon/assets/13144936/22c625b8-d322-4723-815c-ced231e2efab)
 
 The Python moule that the plugin uses is not installed.
