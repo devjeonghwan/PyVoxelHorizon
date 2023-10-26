@@ -1,12 +1,7 @@
-import tkinter.messagebox
-
 from abc import ABC
 
 from pyvoxelhorizon.plugin import Plugin
-from pyvoxelhorizon.plugin.util import *
 from pyvoxelhorizon.plugin.type import *
-from pyvoxelhorizon.plugin.game import *
-from pyvoxelhorizon.plugin.game.voxel import *
 
 PLUGIN_NAME = "BasicPlugin"
 

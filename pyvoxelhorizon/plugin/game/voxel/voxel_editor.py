@@ -1,11 +1,9 @@
-import tkinter.messagebox
 from ctypes import wintypes
 
 from pyvoxelhorizon.enum import *
 from pyvoxelhorizon.interface import *
-from pyvoxelhorizon.struct import *
 from pyvoxelhorizon.plugin.game import *
-
+from pyvoxelhorizon.struct import *
 from .voxel_color import VoxelColor, get_voxel_color
 
 VOXEL_OBJECT_SIZE = 400

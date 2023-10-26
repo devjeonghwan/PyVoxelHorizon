@@ -1,4 +1,5 @@
 import os
+
 from sctokenizer import Source, TokenType
 
 HEADER_FILE_NAMES = ["header/IGameHookController.h", "header/typedef.h", "header/math.inl", "header/patch.h"]

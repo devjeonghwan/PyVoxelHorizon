@@ -1,8 +1,3 @@
-import ctypes
-import ctypes.wintypes as wintypes
-
-from pyvoxelhorizon.util import *
-
 VH_EDIT_MODE_SELECT = 0
 VH_EDIT_MODE_CREATE_NEW_OBJECT = 1
 VH_EDIT_MODE_SET_VOXEL_COLOR = 2

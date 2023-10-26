@@ -1,18 +1,18 @@
-from .voxel_object_property import VoxelObjectProperty
-from .voxel_description_lite import VoxelDescriptionLite
 from .aabb import AABB
 from .bounding_sphere import BoundingSphere
-from .triangle import Triangle
-from .rect import Rect
-from .plane import Plane
-from .vector3 import Vector3
 from .int_vector3 import IntVector3
-from .vector4 import Vector4
 from .int_vector4 import IntVector4
+from .midi_device_info import MIDI_DEVICE_INFO
+from .midi_note import MidiNote
+from .plane import Plane
+from .rect import Rect
+from .triangle import Triangle
+from .vector3 import Vector3
+from .vector4 import Vector4
 from .vertex import Vertex
 from .vertex_quad import VertexQuad
-from .midi_note import MidiNote
-from .midi_device_info import MIDI_DEVICE_INFO
+from .voxel_description_lite import VoxelDescriptionLite
+from .voxel_object_property import VoxelObjectProperty
 
 __all__ = [
     'VoxelObjectProperty',

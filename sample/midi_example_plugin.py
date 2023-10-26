@@ -1,19 +1,15 @@
 import math
-
-import umidiparser
 import os
 import time
-import numpy
-
-from typing import List
 from abc import ABC
+from typing import List
 
-from pyvoxelhorizon.enum import *
+import numpy
+import umidiparser
+
 from pyvoxelhorizon.plugin import Plugin
-from pyvoxelhorizon.plugin.game import VoxelEditor, get_voxel_color, VOXEL_COLOR_PALETTE
+from pyvoxelhorizon.plugin.game.voxel import *
 from pyvoxelhorizon.plugin.type import *
-from pyvoxelhorizon.plugin.util import *
-
 
 PLUGIN_NAME = "MidiExamplePlugin"
 MIDI_NOTE_IMAGE_SCALE_RATIO = 0.05
