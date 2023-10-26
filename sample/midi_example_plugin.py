@@ -156,25 +156,6 @@ class MidiExamplePlugin(Plugin, ABC):
                     color
                 )
 
-            # for note_index in range(MIDI_NOTE_IMAGE_NOTE_RANGE):
-            #     for timing_index in range(midi_note_image_crop.shape[1]):
-            #         for channel_index in range(midi_note_image_crop.shape[2]):
-            #             value = midi_note_image_crop[note_index, timing_index, channel_index]
-            #             value_old = self.midi_note_image_previous[note_index, timing_index, channel_index]
-            #             #
-            #             if value == 0:
-            #                 color = VOXEL_COLOR_PALETTE[MIDI_NOTE_IMAGE_BACKGROUND_COLOR]
-            #             else:
-            #                 color = VOXEL_COLOR_PALETTE[MIDI_NOTE_IMAGE_CHANNEL_COLORS[channel_index % len(MIDI_NOTE_IMAGE_CHANNEL_COLORS)]]
-
-                        # if value != value_old:
-                        #     voxel_editor.set_voxel_color(
-                        #         MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + (note_index * 50),
-                        #         MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + (timing_index * 50),
-                        #         MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Z,
-                        #         color
-                        #     )
-
         self.midi_note_image_previous = midi_note_image_crop
 
         voxel_editor.finish()
