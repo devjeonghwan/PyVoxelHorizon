@@ -1,9 +1,7 @@
 import ctypes
-import ctypes.wintypes as wintypes
 
-from pyvoxelhorizon.util import *
-from pyvoxelhorizon.enum import *
 from pyvoxelhorizon.struct.vector3 import Vector3
+
 
 class Plane(ctypes.Structure):
     _fields_ = (

@@ -1,12 +1,11 @@
 import ctypes
 import ctypes.wintypes as wintypes
 
-from pyvoxelhorizon.util import *
-from pyvoxelhorizon.enum import *
-from pyvoxelhorizon.struct.voxel_object_property import VoxelObjectProperty
-from pyvoxelhorizon.struct.int_vector3 import IntVector3
 from pyvoxelhorizon.struct.aabb import AABB
+from pyvoxelhorizon.struct.int_vector3 import IntVector3
 from pyvoxelhorizon.struct.vector3 import Vector3
+from pyvoxelhorizon.struct.voxel_object_property import VoxelObjectProperty
+from pyvoxelhorizon.util import *
 
 IS_FUNCTIONS_LOADED = False
 
