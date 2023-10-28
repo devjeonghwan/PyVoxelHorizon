@@ -113,5 +113,8 @@ class GameHook:
     def on_console_command(self, command: str) -> bool:
         return False
 
-    def on_midi_input(self, midi_note_address: str) -> bool:
+    def on_midi_input(self, midi_message_address: str, broadcast_mode: bool, begin_counter: int) -> bool:
+        return False
+
+    def on_midi_input(self, midi_message_address: str, from_type: int) -> bool:
         return False

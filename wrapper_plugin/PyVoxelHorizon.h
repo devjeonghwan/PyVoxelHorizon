@@ -56,6 +56,7 @@ private:
     PyObject*   m_pPythonOnPreConsoleCommand;
 
     PyObject*   m_pPythonOnMidiInput;
+    PyObject*   m_pPythonOnMidiEventProcessed;
 
     bool        InitializePython(const WCHAR* wchPyVoxelHorizonPath);
     
@@ -82,7 +83,7 @@ public:
     BOOL __stdcall      OnMouseRButtonUp(int x, int y, UINT nFlags);
     BOOL __stdcall      OnMouseMove(int x, int y, UINT nFlags);
     BOOL __stdcall      OnMouseMoveHV(int iMoveX, int iMoveY, BOOL bLButtonPressed, BOOL bRButtonPressed, BOOL bMButtonPressed);
-    BOOL __stdcall      OnMouseWheel(int iWheel);
+    BOOL __stdcall      OnMouseWheel(int x, int y, int iWheel);
 
     BOOL __stdcall      OnKeyDown(UINT nChar);
     BOOL __stdcall      OnKeyUp(UINT nChar);
@@ -116,7 +117,8 @@ public:
 
     BOOL __stdcall      OnPreConsoleCommand(const WCHAR* wchCmd, DWORD dwCmdLen);
 
-    BOOL __stdcall      OnMidiInput(const MIDI_NOTE_L* pNote);
+    BOOL __stdcall      OnMidiInput(const MIDI_MESSAGE_L* pMessage, BOOL bBroadcastMode, LARGE_INTEGER BeginCounter);
+    BOOL __stdcall	    OnMidiEventProcessed(const MIDI_MESSAGE_L* pMessage, MIDI_EVENT_FROM_TYPE FromType);
 };
 
 #endif

@@ -229,6 +229,10 @@ PyVoxelHorizon::~PyVoxelHorizon()
         Py_DECREF(this->m_pPythonOnMidiInput);
         this->m_pPythonOnMidiInput = NULL;
     }
+    if (this->m_pPythonOnMidiEventProcessed != NULL) {
+        Py_DECREF(this->m_pPythonOnMidiEventProcessed);
+        this->m_pPythonOnMidiEventProcessed = NULL;
+    }
 }
 
 bool PyVoxelHorizon::InitializePython(const WCHAR* wchPyVoxelHorizonPath) {
@@ -373,6 +377,7 @@ bool PyVoxelHorizon::InitializePython(const WCHAR* wchPyVoxelHorizonPath) {
     this->m_pPythonOnPreConsoleCommand = PyObject_GetAttrStringIfExists(this->m_pPythonGameHook, "on_console_command");
 
     this->m_pPythonOnMidiInput = PyObject_GetAttrStringIfExists(this->m_pPythonGameHook, "on_midi_input");
+    this->m_pPythonOnMidiEventProcessed = PyObject_GetAttrStringIfExists(this->m_pPythonGameHook, "on_midi_event_processed");
 
     this->m_IsPythonInitialized = true;
 
@@ -779,14 +784,16 @@ BOOL __stdcall PyVoxelHorizon::OnMouseMoveHV(int iMoveX, int iMoveY, BOOL bLButt
     return returnValue;
 }
 
-BOOL __stdcall PyVoxelHorizon::OnMouseWheel(int iWheel)
+BOOL __stdcall PyVoxelHorizon::OnMouseWheel(int x, int y, int iWheel)
 {
     if (!this->m_IsPythonInitialized || this->m_pPythonOnMouseWheel == NULL) {
         return false;
     }
 
+    PyObject* pPythonX = PyLong_FromLong(x);
+    PyObject* pPythonY = PyLong_FromLong(y);
     PyObject* pPythonWheel = PyLong_FromLong(iWheel);
-    PyObject* pPythonArgument = PyTuple_Pack(1, pPythonWheel);
+    PyObject* pPythonArgument = PyTuple_Pack(3, pPythonX, pPythonY, pPythonWheel);
     PyObject* pPythonReturnValue = PyObject_CallObject(this->m_pPythonOnMouseWheel, pPythonArgument);
 
     if (pPythonReturnValue == NULL)
@@ -800,6 +807,8 @@ BOOL __stdcall PyVoxelHorizon::OnMouseWheel(int iWheel)
     Py_DECREF(pPythonReturnValue);
     Py_DECREF(pPythonArgument);
     Py_DECREF(pPythonWheel);
+    Py_DECREF(pPythonY);
+    Py_DECREF(pPythonX);
 
     return returnValue;
 }
@@ -1421,13 +1430,15 @@ BOOL __stdcall PyVoxelHorizon::OnPreConsoleCommand(const WCHAR* wchCmd, DWORD dw
 }
 
 
-BOOL __stdcall PyVoxelHorizon::OnMidiInput(const MIDI_NOTE_L* pNote) {
+BOOL __stdcall PyVoxelHorizon::OnMidiInput(const MIDI_MESSAGE_L* pMessage, BOOL bBroadcastMode, LARGE_INTEGER BeginCounter) {
     if (!this->m_IsPythonInitialized || this->m_pPythonOnMidiInput == NULL) {
         return false;
     }
 
-    PyObject* pPythonMidiNoteAddress = PyLong_FromUnsignedLongLong((PyAddress)pNote);
-    PyObject* pPythonArgument = PyTuple_Pack(1, pPythonMidiNoteAddress);
+    PyObject* pPythonMidiMessageAddress = PyLong_FromUnsignedLongLong((PyAddress)pMessage);
+    PyObject* pPythonBroadcastMode = PyBool_FromLong(bBroadcastMode);
+    PyObject* pPythonBeginCounter = PyLong_FromLongLong(BeginCounter.QuadPart);
+    PyObject* pPythonArgument = PyTuple_Pack(3, pPythonMidiMessageAddress, pPythonBroadcastMode, pPythonBeginCounter);
     PyObject* pPythonReturnValue = PyObject_CallObject(this->m_pPythonOnMidiInput, pPythonArgument);
 
     if (pPythonReturnValue == NULL)
@@ -1440,7 +1451,35 @@ BOOL __stdcall PyVoxelHorizon::OnMidiInput(const MIDI_NOTE_L* pNote) {
 
     Py_DECREF(pPythonReturnValue);
     Py_DECREF(pPythonArgument);
-    Py_DECREF(pPythonMidiNoteAddress);
+    Py_DECREF(pPythonBeginCounter);
+    Py_DECREF(pPythonBroadcastMode);
+    Py_DECREF(pPythonMidiMessageAddress);
+
+    return returnValue;
+}
+
+BOOL __stdcall PyVoxelHorizon::OnMidiEventProcessed(const MIDI_MESSAGE_L* pMessage, MIDI_EVENT_FROM_TYPE FromType) {
+    if (!this->m_IsPythonInitialized || this->m_pPythonOnMidiEventProcessed == NULL) {
+        return false;
+    }
+
+    PyObject* pPythonMidiMessageAddress = PyLong_FromUnsignedLongLong((PyAddress)pMessage);
+    PyObject* pPythonMidiEventFromType = PyLong_FromLong((long)FromType);
+    PyObject* pPythonArgument = PyTuple_Pack(2, pPythonMidiMessageAddress, pPythonMidiEventFromType);
+    PyObject* pPythonReturnValue = PyObject_CallObject(this->m_pPythonOnMidiEventProcessed, pPythonArgument);
+
+    if (pPythonReturnValue == NULL)
+    {
+        this->ShowPythonException();
+        return false;
+    }
+
+    bool returnValue = PyObject_IsTrue(pPythonReturnValue);
+
+    Py_DECREF(pPythonReturnValue);
+    Py_DECREF(pPythonArgument);
+    Py_DECREF(pPythonMidiEventFromType);
+    Py_DECREF(pPythonMidiMessageAddress);
 
     return returnValue;
 }

@@ -1,6 +1,9 @@
 import ctypes
 import ctypes.wintypes as wintypes
 
+from pyvoxelhorizon.util import *
+from pyvoxelhorizon.enum import *
+from pyvoxelhorizon.interface.voxel_object_lite import VoxelObjectLite
 
 class VoxelDescriptionLite(ctypes.Structure):
     _fields_ = (

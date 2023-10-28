@@ -14,6 +14,17 @@ VOXEL_OBJECT_HALF_SIZE = int(VOXEL_OBJECT_SIZE / 2)
 def _align_voxel_object_8_coord(x: int) -> int:
     return int(x / VOXEL_OBJECT_8_SIZE) % 8
 
+class VoxelObject:
+    voxel_object_lite: VoxelObjectLite = None
+    bit_table: int
+    color_bit_table: int
+
+    def __init__(self, voxel_object_lite: VoxelObjectLite):
+        self.voxel_object_lite = voxel_object_lite
+
+        voxel_object_lite.get_bit_table()
+        voxel_object_lite.get_color_table()
+
 
 class VoxelEditor:
     game_controller: GameController = None
