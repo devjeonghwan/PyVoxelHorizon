@@ -13,6 +13,7 @@ from pyvoxelhorizon.plugin.type import *
 
 PLUGIN_NAME = "VoxelEditorExamplePlugin"
 
+
 class VoxelEditorExamplePlugin(Plugin, ABC):
     index: int = 0
 
