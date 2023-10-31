@@ -2,14 +2,14 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommand>$(VOXEL_HORIZON_PATH)\App\Client_$(PlatformTarget)_release.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>/p /dx11 /ns /pl $(TargetFileName)</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>/p /dx11 /su  /ns /pl $(TargetFileName)</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(VOXEL_HORIZON_PATH)\App</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerCommand>$(VOXEL_HORIZON_PATH)\App\Client_$(PlatformTarget)_release.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>/p /dx11 /ns /pl $(TargetFileName)</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>/p /dx11 /su  /ns /pl $(TargetFileName)</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(VOXEL_HORIZON_PATH)\App</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>

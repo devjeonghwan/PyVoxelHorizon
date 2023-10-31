@@ -19,14 +19,14 @@ MIDI_NOTE_IMAGE_TIMING_RANGE = 128
 
 MIDI_NOTE_IMAGE_DISPLAY_OFFSET_X = 0
 MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y = -1000
-MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Z = 2000
+MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Z = 2350
 
 MIDI_NOTE_IMAGE_BACKGROUND_COLOR = 11
 MIDI_NOTE_IMAGE_CHANNEL_COLORS = [7, 18, 24, 27]
 
-MIDI_NETWORK_MODE = True
+MIDI_NETWORK_MODE = False
 MIDI_NETWORK_BUFFER = 3000
-MIDI_VISUALIZER_MODE = False
+MIDI_VISUALIZER_MODE = True
 
 
 def render_midi_notes(midi_file: umidiparser.MidiFile, rescale_ratio: float, buffer_for_y: int = 0):
@@ -106,10 +106,11 @@ class MidiExamplePlugin(Plugin, ABC):
             if MIDI_VISUALIZER_MODE:
                 for note_index in range(MIDI_NOTE_IMAGE_NOTE_RANGE):
                     for timing_index in range(MIDI_NOTE_IMAGE_TIMING_RANGE):
-                        voxel_editor.add_voxel(
-                            MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + (note_index * 50),
+                        voxel_editor.set_voxel_with_color(
+                            MIDI_NOTE_IMAGE_DISPLAY_OFFSET_X + (note_index * 50),
                             MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + (timing_index * 50),
                             MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Z,
+                            True,
                             get_voxel_color(MIDI_NOTE_IMAGE_BACKGROUND_COLOR)
                         )
 
@@ -137,16 +138,22 @@ class MidiExamplePlugin(Plugin, ABC):
                     value = midi_note_image_crop[note_index, timing_index, channel_index]
 
                     if value == 0:
-                        color = VOXEL_COLOR_PALETTE[MIDI_NOTE_IMAGE_BACKGROUND_COLOR]
+                        voxel_editor.set_voxel(
+                            MIDI_NOTE_IMAGE_DISPLAY_OFFSET_X + (note_index * 50),
+                            MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + (timing_index * 50),
+                            MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Z - (((channel_index % 7) + 1) * 50),
+                            False
+                        )
                     else:
                         color = VOXEL_COLOR_PALETTE[MIDI_NOTE_IMAGE_CHANNEL_COLORS[channel_index % len(MIDI_NOTE_IMAGE_CHANNEL_COLORS)]]
 
-                    voxel_editor.set_voxel_color(
-                        MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + (note_index * 50),
-                        MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + (timing_index * 50),
-                        MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Z,
-                        color
-                    )
+                        voxel_editor.set_voxel_with_color(
+                            MIDI_NOTE_IMAGE_DISPLAY_OFFSET_X + (note_index * 50),
+                            MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + (timing_index * 50),
+                            MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Z - (((channel_index % 7) + 1) * 50),
+                            True,
+                            color
+                        )
 
             self.midi_note_image_previous = midi_note_image_crop
 
@@ -164,15 +171,15 @@ class MidiExamplePlugin(Plugin, ABC):
 
                 if midi_event.is_channel():
                     if midi_event.status == umidiparser.NOTE_OFF or (midi_event.status == umidiparser.NOTE_ON and midi_event.velocity == 0):
-                        self.game.game_controller.midi_note_off_immediately(midi_event.channel, midi_event.note, 0)
+                        self.game.controller.midi_note_off_immediately(midi_event.channel, midi_event.note, 0)
                     elif midi_event.status == umidiparser.NOTE_ON:
-                        self.game.game_controller.midi_note_on_immediately(midi_event.channel, midi_event.note, midi_event.velocity)
+                        self.game.controller.midi_note_on_immediately(midi_event.channel, midi_event.note, midi_event.velocity)
                     elif midi_event.status == umidiparser.PROGRAM_CHANGE:
-                        self.game.game_controller.midi_change_program_immediately(midi_event.channel, midi_event.program)
+                        self.game.controller.midi_change_program_immediately(midi_event.channel, midi_event.program)
 
                 self.midi_event_index += 1
         else:
-            self.game.game_controller.midi_begin_push_message()
+            self.game.controller.midi_begin_push_message()
 
             while self.midi_event_index < len(self.midi_events):
                 midi_event = self.midi_events[self.midi_event_index]
@@ -182,15 +189,15 @@ class MidiExamplePlugin(Plugin, ABC):
 
                 if midi_event.is_channel():
                     if midi_event.status == umidiparser.NOTE_OFF or (midi_event.status == umidiparser.NOTE_ON and midi_event.velocity == 0):
-                        self.game.game_controller.midi_push_note_off(midi_event.channel, midi_event.note, 0, int(self.midi_playback))
+                        self.game.controller.midi_push_note_off(midi_event.channel, midi_event.note, 0, int(self.midi_playback))
                     elif midi_event.status == umidiparser.NOTE_ON:
-                        self.game.game_controller.midi_push_note_on(midi_event.channel, midi_event.note, midi_event.velocity, int(self.midi_playback))
+                        self.game.controller.midi_push_note_on(midi_event.channel, midi_event.note, midi_event.velocity, int(self.midi_playback))
                     elif midi_event.status == umidiparser.PROGRAM_CHANGE:
-                        self.game.game_controller.midi_push_change_program(midi_event.channel, midi_event.program, int(self.midi_playback))
+                        self.game.controller.midi_push_change_program(midi_event.channel, midi_event.program, int(self.midi_playback))
 
                 self.midi_event_index += 1
 
-            self.game.game_controller.midi_end_push_message()
+            self.game.controller.midi_end_push_message()
 
     def on_command(self, command: str) -> bool:
         if command == 'play':
@@ -208,7 +215,7 @@ class MidiExamplePlugin(Plugin, ABC):
             self.midi_playback = 0
 
             if MIDI_NETWORK_MODE:
-                self.game.game_controller.enable_broadcast_mode_immediately()
+                self.game.controller.enable_broadcast_mode_immediately()
 
             return True
 
@@ -223,7 +230,7 @@ class MidiExamplePlugin(Plugin, ABC):
                     if midi_event.note not in off_checks[midi_event.channel]:
                         off_checks[midi_event.channel][midi_event.note] = True
 
-                        self.game.game_controller.midi_note_off_immediately(midi_event.channel, False, midi_event.note, 0)
+                        self.game.controller.midi_note_off_immediately(midi_event.channel, midi_event.note, 0)
 
             self.midi_events = []
             self.midi_event_index = 0
@@ -231,7 +238,7 @@ class MidiExamplePlugin(Plugin, ABC):
             self.midi_playback = 0
 
             if MIDI_NETWORK_MODE:
-                self.game.game_controller.disable_broadcast_mode_immediately()
+                self.game.controller.disable_broadcast_mode_immediately()
 
             return True
 

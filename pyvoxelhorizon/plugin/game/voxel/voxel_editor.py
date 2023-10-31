@@ -1,10 +1,12 @@
+import ctypes
 from ctypes import wintypes
 
+from pyvoxelhorizon.util.address_object import *
 from pyvoxelhorizon.enum import *
 from pyvoxelhorizon.interface import *
 from pyvoxelhorizon.plugin.game import *
 from pyvoxelhorizon.struct import *
-from .voxel_color import VoxelColor, get_voxel_color
+from .voxel_color import VoxelColor, get_voxel_color, VOXEL_COLOR_PALETTE
 
 VOXEL_OBJECT_SIZE = 400
 VOXEL_OBJECT_8_SIZE = int(VOXEL_OBJECT_SIZE / 8)
@@ -14,16 +16,99 @@ VOXEL_OBJECT_HALF_SIZE = int(VOXEL_OBJECT_SIZE / 2)
 def _align_voxel_object_8_coord(x: int) -> int:
     return int(x / VOXEL_OBJECT_8_SIZE) % 8
 
+
+# Always handle voxel object with '8' width depth height
 class VoxelObject:
     voxel_object_lite: VoxelObjectLite = None
-    bit_table: int
-    color_bit_table: int
+
+    dirty: bool = False
+    bit_table: list[int] = None
+    color_table: list[int] = None
 
     def __init__(self, voxel_object_lite: VoxelObjectLite):
         self.voxel_object_lite = voxel_object_lite
 
-        voxel_object_lite.get_bit_table()
-        voxel_object_lite.get_color_table()
+        out_bit_table = (ctypes.c_uint8 * 64)()
+        out_width_depth_height = wintypes.UINT()
+
+        if not self.voxel_object_lite.get_bit_table(cast_address(get_address(out_bit_table), ctypes.c_uint), 64, out_width_depth_height):
+            raise Exception("Unreachable Exception")
+
+        if out_width_depth_height.value != 8:
+            if not self.voxel_object_lite.resize_width_depth_height(8, False):
+                raise Exception("Failed to resize width depth height of voxel object.")
+
+        if not self.voxel_object_lite.get_bit_table(cast_address(get_address(out_bit_table), ctypes.c_uint), 64, out_width_depth_height):
+            raise Exception("Unreachable Exception")
+
+        if out_width_depth_height.value != 8:
+            raise Exception("Unreachable Exception")
+
+        out_color_table = (ctypes.c_uint8 * 512)()
+
+        if not self.voxel_object_lite.get_color_table(cast_address(get_address(out_color_table), wintypes.BYTE), 512, 8):
+            raise Exception("Unreachable Exception")
+
+        self.bit_table = list(out_bit_table)
+        self.color_table = list(out_color_table)
+
+    def apply_tables(self):
+        if not self.dirty:
+            return
+
+        self.dirty = False
+
+        bit_table = (ctypes.c_uint8 * len(self.bit_table))(*self.bit_table)
+
+        self.voxel_object_lite.set_bit_table(cast_address(get_address(bit_table), ctypes.c_uint), 8, False)
+        # if not self.voxel_object_lite.set_bit_table(cast_address(get_address(bit_table), ctypes.c_uint), 8, False):
+        #     raise Exception("Failed to set bit table to voxel object.")
+
+        color_table = (ctypes.c_uint8 * len(self.color_table))(*self.color_table)
+
+        self.voxel_object_lite.set_color_table(cast_address(get_address(color_table), wintypes.BYTE), 8)
+        # if not self.voxel_object_lite.set_color_table(cast_address(get_address(color_table), wintypes.BYTE), 8):
+        #     raise Exception("Failed to set color table to voxel object.")
+
+        self.voxel_object_lite.update_geometry(False)
+        self.voxel_object_lite.update_lighting()
+
+    def clear(self):
+        for index in range(len(self.bit_table)):
+            self.bit_table[index] = 0
+
+    def get_voxel(self, x: int, y: int, z: int) -> bool:
+        index = int(x + (z * 8) + (y * 64))
+
+        byte_index = int(index / 8)
+        bit_index = index - (byte_index * 8)
+
+        return (self.bit_table[byte_index]) & (0b1 << bit_index) != 0
+
+    def set_voxel(self, x: int, y: int, z: int, value: bool):
+        self.dirty = True
+
+        index = int(x + (z * 8) + (y * 64))
+
+        byte_index = int(index / 8)
+        bit_index = index - (byte_index * 8)
+
+        if value:
+            self.bit_table[byte_index] = (self.bit_table[byte_index]) | (0b1 << bit_index)
+        else:
+            self.bit_table[byte_index] = (self.bit_table[byte_index]) & ~(0b1 << bit_index)
+
+    def get_voxel_color(self, x: int, y: int, z: int) -> VoxelColor:
+        index = int(x + (z * 8) + (y * 64))
+
+        return VOXEL_COLOR_PALETTE[self.color_table[index]]
+
+    def set_voxel_color(self, x: int, y: int, z: int, color: VoxelColor):
+        self.dirty = True
+
+        index = int(x + (z * 8) + (y * 64))
+
+        self.color_table[index] = color.id
 
 
 class VoxelEditor:
@@ -37,9 +122,8 @@ class VoxelEditor:
     world_y_max: int
     world_z_max: int
 
-    voxel_object_cache: dict[str, VoxelObjectLite] = {}
+    voxel_object_cache: dict[str, VoxelObject] = {}
     is_created_voxel_object: bool = False
-    last_created_voxel_object: VoxelObjectLite | None = None
 
     input_vector3: Vector3 = Vector3()
     output_error: wintypes.INT = wintypes.INT()
@@ -50,7 +134,7 @@ class VoxelEditor:
     output_voxel_object_property: VoxelObjectProperty = VoxelObjectProperty()
 
     def __init__(self, game: Game):
-        self.game_controller = game.game_controller
+        self.game_controller = game.controller
 
         output_object_num_width = wintypes.DWORD()
         output_object_num_depth = wintypes.DWORD()
@@ -67,7 +151,7 @@ class VoxelEditor:
         self.world_y_max = output_aabb.max.y
         self.world_z_max = output_aabb.max.z
 
-    def _get_voxel_object(self, x: int, y: int, z: int, create_if_not_exists: bool = True) -> VoxelObjectLite | None:
+    def _get_voxel_object(self, x: int, y: int, z: int, create_if_not_exists: bool = True) -> VoxelObject | None:
         x = self.world_x_min + VOXEL_OBJECT_HALF_SIZE + (int((x - self.world_x_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
         y = self.world_y_min + VOXEL_OBJECT_HALF_SIZE + (int((y - self.world_y_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
         z = self.world_z_min + VOXEL_OBJECT_HALF_SIZE + (int((z - self.world_z_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
@@ -79,21 +163,28 @@ class VoxelEditor:
         self.input_vector3.z = z
 
         if key not in self.voxel_object_cache:
-            voxel_object = self.game_controller.get_voxel_object_with_grid_coord(self.input_vector3)
+            voxel_object = self.game_controller.get_voxel_object_with_float_coord(self.input_vector3)
 
-            if not voxel_object:
+            if voxel_object is None:
                 if not create_if_not_exists:
                     return None
 
                 voxel_object = self.game_controller.create_voxel_object(self.input_vector3, 8, 0, self.output_error)
+                voxel_object.update_geometry(False)
+                voxel_object.update_lighting()
+
                 self.is_created_voxel_object = True
 
                 if self.output_error.value != CREATE_VOXEL_OBJECT_ERROR_OK:
                     raise Exception("Failed to create voxel object. returned `{0}`".format(get_create_voxel_object_error_string(self.output_error.value)))
 
-                self.last_created_voxel_object = voxel_object
+                voxel_object = VoxelObject(voxel_object)
 
-            self.voxel_object_cache[key] = voxel_object
+                voxel_object.clear()
+
+                self.voxel_object_cache[key] = voxel_object
+            else:
+                self.voxel_object_cache[key] = VoxelObject(voxel_object)
 
         return self.voxel_object_cache[key]
 
@@ -108,28 +199,40 @@ class VoxelEditor:
             voxel_object = self.voxel_object_cache[key]
 
             if remove_voxels:
-                voxel_object.remove_voxel_with_auto_resize(self.output_width_depth_height, self.output_voxel_object_deleted, 0, 0, 0, 1)
+                voxel_object.voxel_object_lite.remove_voxel_with_auto_resize(self.output_width_depth_height, self.output_voxel_object_deleted, 0, 0, 0, 1)
 
             del self.voxel_object_cache[key]
 
-    def is_voxel_exists(self, x: int, y: int, z: int) -> bool:
+    def get_voxel(self, x: int, y: int, z: int) -> bool:
         voxel_object = self._get_voxel_object(x, y, z, False)
 
         if not voxel_object:
             return False
 
-        voxel_object.get_voxel_object_property(self.output_voxel_object_property)
+        x = _align_voxel_object_8_coord(x)
+        y = _align_voxel_object_8_coord(y)
+        z = _align_voxel_object_8_coord(z)
 
-        width_depth_height = self.output_voxel_object_property.width_depth_height
+        return voxel_object.get_voxel(x, y, z)
 
-        scaled_x = int(width_depth_height * (_align_voxel_object_8_coord(x) / 8.0))
-        scaled_y = int(width_depth_height * (_align_voxel_object_8_coord(y) / 8.0))
-        scaled_z = int(width_depth_height * (_align_voxel_object_8_coord(z) / 8.0))
+    def set_voxel(self, x: int, y: int, z: int, value: bool):
+        voxel_object = self._get_voxel_object(x, y, z, True)
 
-        if not voxel_object.get_voxel(self.output_voxel_object_exists, scaled_x, scaled_y, scaled_z):
-            raise Exception("Unreachable Exception")
+        x = _align_voxel_object_8_coord(x)
+        y = _align_voxel_object_8_coord(y)
+        z = _align_voxel_object_8_coord(z)
 
-        return self.output_voxel_object_exists.value != 0
+        voxel_object.set_voxel(x, y, z, value)
+
+    def set_voxel_with_color(self, x: int, y: int, z: int, value: bool, color: VoxelColor):
+        voxel_object = self._get_voxel_object(x, y, z, True)
+
+        x = _align_voxel_object_8_coord(x)
+        y = _align_voxel_object_8_coord(y)
+        z = _align_voxel_object_8_coord(z)
+
+        voxel_object.set_voxel(x, y, z, value)
+        voxel_object.set_voxel_color(x, y, z, color)
 
     def get_voxel_color(self, x: int, y: int, z: int) -> VoxelColor | None:
         voxel_object = self._get_voxel_object(x, y, z, False)
@@ -137,66 +240,28 @@ class VoxelEditor:
         if not voxel_object:
             return None
 
-        voxel_object.get_voxel_object_property(self.output_voxel_object_property)
+        x = _align_voxel_object_8_coord(x)
+        y = _align_voxel_object_8_coord(y)
+        z = _align_voxel_object_8_coord(z)
 
-        width_depth_height = self.output_voxel_object_property.width_depth_height
-
-        scaled_x = int(width_depth_height * (_align_voxel_object_8_coord(x) / 8.0))
-        scaled_y = int(width_depth_height * (_align_voxel_object_8_coord(y) / 8.0))
-        scaled_z = int(width_depth_height * (_align_voxel_object_8_coord(z) / 8.0))
-
-        if not voxel_object.get_color_per_voxel(self.output_color_index, scaled_x, scaled_y, scaled_z):
-            raise Exception("Unreachable Exception")
-
-        return get_voxel_color(self.output_color_index.value)
+        return voxel_object.get_voxel_color(x, y, z)
 
     def set_voxel_color(self, x: int, y: int, z: int, color: VoxelColor) -> bool:
-        voxel_object = self._get_voxel_object(x, y, z)
+        voxel_object = self._get_voxel_object(x, y, z, False)
+
+        if not voxel_object:
+            return False
 
         x = _align_voxel_object_8_coord(x)
         y = _align_voxel_object_8_coord(y)
         z = _align_voxel_object_8_coord(z)
 
-        return voxel_object.set_voxel_color_with_auto_resize(self.output_width_depth_height, x, y, z, color.id, 8)
+        voxel_object.set_voxel_color(x, y, z, color)
 
-    def add_voxel(self, x: int, y: int, z: int, color: VoxelColor) -> bool:
-        voxel_object = self._get_voxel_object(x, y, z)
-
-        x = _align_voxel_object_8_coord(x)
-        y = _align_voxel_object_8_coord(y)
-        z = _align_voxel_object_8_coord(z)
-
-        if self.last_created_voxel_object == voxel_object:
-            self.last_created_voxel_object = None
-            return_value = voxel_object.clear_and_add_voxel(x, y, z, False)
-
-            if not return_value:
-                return False
-
-            return voxel_object.set_voxel_color(x, y, z, color.id)
-
-        return voxel_object.add_voxel_with_auto_resize(self.output_width_depth_height, x, y, z, color.id, 8)
-
-    def remove_voxel(self, x: int, y: int, z: int) -> bool:
-        voxel_object = self._get_voxel_object(x, y, z)
-
-        voxel_x = _align_voxel_object_8_coord(x)
-        voxel_y = _align_voxel_object_8_coord(y)
-        voxel_z = _align_voxel_object_8_coord(z)
-
-        return_value = voxel_object.remove_voxel_with_auto_resize(self.output_width_depth_height, self.output_voxel_object_deleted, voxel_x, voxel_y, voxel_z, 8)
-
-        if self.output_voxel_object_deleted.value != 0:
-            self._remove_voxel_object(x, y, z, remove_voxels=False)
-
-        return return_value
+        return True
 
     def finish(self):
-        if self.is_created_voxel_object:
-            for voxel_object in self.voxel_object_cache.values():
-                voxel_object.update_geometry(False)
-                voxel_object.update_lighting()
-
-            self.is_created_voxel_object = False
+        for voxel_object in self.voxel_object_cache.values():
+            voxel_object.apply_tables()
 
         self.voxel_object_cache = {}
