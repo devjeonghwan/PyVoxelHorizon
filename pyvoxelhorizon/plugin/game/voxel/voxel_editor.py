@@ -12,9 +12,27 @@ VOXEL_OBJECT_SIZE = 400
 VOXEL_OBJECT_8_SIZE = int(VOXEL_OBJECT_SIZE / 8)
 VOXEL_OBJECT_HALF_SIZE = int(VOXEL_OBJECT_SIZE / 2)
 
+BIT_SELECTORS = [
+    0b1 << 0,
+    0b1 << 1,
+    0b1 << 2,
+    0b1 << 3,
+    0b1 << 4,
+    0b1 << 5,
+    0b1 << 6,
+    0b1 << 7,
+]
 
-def _align_voxel_object_8_coord(x: int) -> int:
-    return int(x / VOXEL_OBJECT_8_SIZE) % 8
+BIT_REVERSE_SELECTORS = [
+    ~(0b1 << 0),
+    ~(0b1 << 1),
+    ~(0b1 << 2),
+    ~(0b1 << 3),
+    ~(0b1 << 4),
+    ~(0b1 << 5),
+    ~(0b1 << 6),
+    ~(0b1 << 7),
+]
 
 
 # Always handle voxel object with '8' width depth height
@@ -78,35 +96,35 @@ class VoxelObject:
             self.bit_table[index] = 0
 
     def get_voxel(self, x: int, y: int, z: int) -> bool:
-        index = int(x + (z * 8) + (y * 64))
+        index = x + (z * 8) + (y * 64)
 
         byte_index = int(index / 8)
-        bit_index = index - (byte_index * 8)
+        bit_index = index % 8
 
-        return (self.bit_table[byte_index]) & (0b1 << bit_index) != 0
+        return self.bit_table[byte_index] & BIT_SELECTORS[bit_index] != 0
 
     def set_voxel(self, x: int, y: int, z: int, value: bool):
         self.dirty = True
 
-        index = int(x + (z * 8) + (y * 64))
+        index = x + (z * 8) + (y * 64)
 
         byte_index = int(index / 8)
-        bit_index = index - (byte_index * 8)
+        bit_index = index % 8
 
         if value:
-            self.bit_table[byte_index] = (self.bit_table[byte_index]) | (0b1 << bit_index)
+            self.bit_table[byte_index] |= BIT_SELECTORS[bit_index]
         else:
-            self.bit_table[byte_index] = (self.bit_table[byte_index]) & ~(0b1 << bit_index)
+            self.bit_table[byte_index] &= BIT_REVERSE_SELECTORS[bit_index]
 
     def get_voxel_color(self, x: int, y: int, z: int) -> VoxelColor:
-        index = int(x + (z * 8) + (y * 64))
+        index = x + (z * 8) + (y * 64)
 
         return VOXEL_COLOR_PALETTE[self.color_table[index]]
 
     def set_voxel_color(self, x: int, y: int, z: int, color: VoxelColor):
         self.dirty = True
 
-        index = int(x + (z * 8) + (y * 64))
+        index = x + (z * 8) + (y * 64)
 
         self.color_table[index] = color.id
 
@@ -118,9 +136,9 @@ class VoxelEditor:
     world_y_min: int
     world_z_min: int
 
-    world_x_max: int
-    world_y_max: int
-    world_z_max: int
+    world_x_offset: int
+    world_y_offset: int
+    world_z_offset: int
 
     voxel_object_cache: dict[str, VoxelObject] = {}
     is_created_voxel_object: bool = False
@@ -147,61 +165,46 @@ class VoxelEditor:
         self.world_y_min = output_aabb.min.y
         self.world_z_min = output_aabb.min.z
 
-        self.world_x_max = output_aabb.max.x
-        self.world_y_max = output_aabb.max.y
-        self.world_z_max = output_aabb.max.z
+        self.world_x_offset = self.world_x_min + VOXEL_OBJECT_HALF_SIZE
+        self.world_y_offset = self.world_y_min + VOXEL_OBJECT_HALF_SIZE
+        self.world_z_offset = self.world_z_min + VOXEL_OBJECT_HALF_SIZE
 
     def _get_voxel_object(self, x: int, y: int, z: int, create_if_not_exists: bool = True) -> VoxelObject | None:
-        x = self.world_x_min + VOXEL_OBJECT_HALF_SIZE + (int((x - self.world_x_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
-        y = self.world_y_min + VOXEL_OBJECT_HALF_SIZE + (int((y - self.world_y_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
-        z = self.world_z_min + VOXEL_OBJECT_HALF_SIZE + (int((z - self.world_z_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
+        x = self.world_x_offset + (int((x - self.world_x_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
+        y = self.world_y_offset + (int((y - self.world_y_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
+        z = self.world_z_offset + (int((z - self.world_z_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
 
-        key = "{0}_{1}_{2}".format(x, y, z)
-
-        self.input_vector3.x = x
-        self.input_vector3.y = y
-        self.input_vector3.z = z
+        key = "%d_%d_%d" % (x, y, z)
 
         if key not in self.voxel_object_cache:
-            voxel_object = self.game_controller.get_voxel_object_with_float_coord(self.input_vector3)
+            voxel_object = None
 
-            if voxel_object is None:
+            self.input_vector3.x = x
+            self.input_vector3.y = y
+            self.input_vector3.z = z
+
+            voxel_object_lite = self.game_controller.get_voxel_object_with_float_coord(self.input_vector3)
+
+            if voxel_object_lite is None:
                 if not create_if_not_exists:
                     return None
 
-                voxel_object = self.game_controller.create_voxel_object(self.input_vector3, 8, 0, self.output_error)
-                voxel_object.update_geometry(False)
-                voxel_object.update_lighting()
+                voxel_object_lite = self.game_controller.create_voxel_object(self.input_vector3, 8, 0, self.output_error)
 
                 self.is_created_voxel_object = True
 
                 if self.output_error.value != CREATE_VOXEL_OBJECT_ERROR_OK:
                     raise Exception("Failed to create voxel object. returned `{0}`".format(get_create_voxel_object_error_string(self.output_error.value)))
 
-                voxel_object = VoxelObject(voxel_object)
-
+                voxel_object = VoxelObject(voxel_object_lite)
                 voxel_object.clear()
-
-                self.voxel_object_cache[key] = voxel_object
             else:
-                self.voxel_object_cache[key] = VoxelObject(voxel_object)
+                voxel_object = VoxelObject(voxel_object_lite)
+
+            self.voxel_object_cache[key] = voxel_object
+            return voxel_object
 
         return self.voxel_object_cache[key]
-
-    def _remove_voxel_object(self, x: int, y: int, z: int, remove_voxels: bool = True):
-        x = self.world_x_min + VOXEL_OBJECT_HALF_SIZE + (int((x - self.world_x_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
-        y = self.world_y_min + VOXEL_OBJECT_HALF_SIZE + (int((y - self.world_y_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
-        z = self.world_z_min + VOXEL_OBJECT_HALF_SIZE + (int((z - self.world_z_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
-
-        key = "{0}_{1}_{2}".format(x, y, z)
-
-        if key in self.voxel_object_cache:
-            voxel_object = self.voxel_object_cache[key]
-
-            if remove_voxels:
-                voxel_object.voxel_object_lite.remove_voxel_with_auto_resize(self.output_width_depth_height, self.output_voxel_object_deleted, 0, 0, 0, 1)
-
-            del self.voxel_object_cache[key]
 
     def get_voxel(self, x: int, y: int, z: int) -> bool:
         voxel_object = self._get_voxel_object(x, y, z, False)
@@ -209,27 +212,27 @@ class VoxelEditor:
         if not voxel_object:
             return False
 
-        x = _align_voxel_object_8_coord(x)
-        y = _align_voxel_object_8_coord(y)
-        z = _align_voxel_object_8_coord(z)
+        x = int(x / VOXEL_OBJECT_8_SIZE) % 8
+        y = int(y / VOXEL_OBJECT_8_SIZE) % 8
+        z = int(z / VOXEL_OBJECT_8_SIZE) % 8
 
         return voxel_object.get_voxel(x, y, z)
 
     def set_voxel(self, x: int, y: int, z: int, value: bool):
         voxel_object = self._get_voxel_object(x, y, z, True)
 
-        x = _align_voxel_object_8_coord(x)
-        y = _align_voxel_object_8_coord(y)
-        z = _align_voxel_object_8_coord(z)
+        x = int(x / VOXEL_OBJECT_8_SIZE) % 8
+        y = int(y / VOXEL_OBJECT_8_SIZE) % 8
+        z = int(z / VOXEL_OBJECT_8_SIZE) % 8
 
         voxel_object.set_voxel(x, y, z, value)
 
     def set_voxel_with_color(self, x: int, y: int, z: int, value: bool, color: VoxelColor):
         voxel_object = self._get_voxel_object(x, y, z, True)
 
-        x = _align_voxel_object_8_coord(x)
-        y = _align_voxel_object_8_coord(y)
-        z = _align_voxel_object_8_coord(z)
+        x = int(x / VOXEL_OBJECT_8_SIZE) % 8
+        y = int(y / VOXEL_OBJECT_8_SIZE) % 8
+        z = int(z / VOXEL_OBJECT_8_SIZE) % 8
 
         voxel_object.set_voxel(x, y, z, value)
         voxel_object.set_voxel_color(x, y, z, color)
@@ -240,9 +243,9 @@ class VoxelEditor:
         if not voxel_object:
             return None
 
-        x = _align_voxel_object_8_coord(x)
-        y = _align_voxel_object_8_coord(y)
-        z = _align_voxel_object_8_coord(z)
+        x = int(x / VOXEL_OBJECT_8_SIZE) % 8
+        y = int(y / VOXEL_OBJECT_8_SIZE) % 8
+        z = int(z / VOXEL_OBJECT_8_SIZE) % 8
 
         return voxel_object.get_voxel_color(x, y, z)
 
@@ -252,9 +255,9 @@ class VoxelEditor:
         if not voxel_object:
             return False
 
-        x = _align_voxel_object_8_coord(x)
-        y = _align_voxel_object_8_coord(y)
-        z = _align_voxel_object_8_coord(z)
+        x = int(x / VOXEL_OBJECT_8_SIZE) % 8
+        y = int(y / VOXEL_OBJECT_8_SIZE) % 8
+        z = int(z / VOXEL_OBJECT_8_SIZE) % 8
 
         voxel_object.set_voxel_color(x, y, z, color)
 
