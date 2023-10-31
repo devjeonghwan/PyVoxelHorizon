@@ -250,7 +250,7 @@ class MidiExamplePlugin(Plugin, ABC):
     def on_mouse_move(self, x: int, y: int) -> bool:
         return False
 
-    def on_mouse_wheel(self, wheel: int) -> bool:
+    def on_mouse_wheel(self, x: int, y: int, wheel: int) -> bool:
         return False
 
     def on_key(self, key_type: KeyType, pressed: bool) -> bool:

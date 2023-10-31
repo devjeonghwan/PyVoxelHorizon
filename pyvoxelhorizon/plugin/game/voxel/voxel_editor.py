@@ -121,6 +121,17 @@ class VoxelObject:
 
         return VOXEL_COLOR_PALETTE[self.color_table[index]]
 
+    def get_voxel_color_if_exists(self, x: int, y: int, z: int) -> VoxelColor | None:
+        index = x + (z * 8) + (y * 64)
+
+        byte_index = int(index / 8)
+        bit_index = index % 8
+
+        if self.bit_table[byte_index] & BIT_SELECTORS[bit_index] != 0:
+            return VOXEL_COLOR_PALETTE[self.color_table[index]]
+
+        return None
+
     def set_voxel_color(self, x: int, y: int, z: int, color: VoxelColor):
         self.dirty = True
 
@@ -262,6 +273,18 @@ class VoxelEditor:
         voxel_object.set_voxel_color(x, y, z, color)
 
         return True
+
+    def get_voxel_color_if_exists(self, x: int, y: int, z: int) -> VoxelColor | None:
+        voxel_object = self._get_voxel_object(x, y, z, False)
+
+        if not voxel_object:
+            return None
+
+        x = int(x / VOXEL_OBJECT_8_SIZE) % 8
+        y = int(y / VOXEL_OBJECT_8_SIZE) % 8
+        z = int(z / VOXEL_OBJECT_8_SIZE) % 8
+
+        return voxel_object.get_voxel_color_if_exists(x, y, z)
 
     def finish(self):
         for voxel_object in self.voxel_object_cache.values():

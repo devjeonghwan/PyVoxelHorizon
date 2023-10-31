@@ -138,9 +138,9 @@ class PluginLoader(GameHook):
 
         return False
 
-    def on_mouse_wheel(self, wheel: int) -> bool:
+    def on_mouse_wheel(self, x: int, y: int, wheel: int) -> bool:
         for plugin in self.plugins:
-            if plugin.on_mouse_wheel(wheel):
+            if plugin.on_mouse_wheel(x, y, wheel):
                 return True
 
         return False
