@@ -4,8 +4,8 @@ from pyvoxelhorizon.plugin.util import *
 
 
 class Game:
-    controller: GameController = None
-    network_layer: NetworkLayer = None
+    controller: GameController
+    network_layer: NetworkLayer
 
     def __init__(self, game_controller: GameController, network_layer: NetworkLayer):
         self.controller = game_controller

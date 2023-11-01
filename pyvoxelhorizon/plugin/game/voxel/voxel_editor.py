@@ -37,11 +37,11 @@ BIT_REVERSE_SELECTORS = [
 
 # Always handle voxel object with '8' width depth height
 class VoxelObject:
-    voxel_object_lite: VoxelObjectLite = None
+    voxel_object_lite: VoxelObjectLite
 
     dirty: bool = False
-    bit_table: list[int] = None
-    color_table: list[int] = None
+    bit_table: list[int]
+    color_table: list[int]
 
     def __init__(self, voxel_object_lite: VoxelObjectLite):
         self.voxel_object_lite = voxel_object_lite
@@ -56,11 +56,11 @@ class VoxelObject:
             if not self.voxel_object_lite.resize_width_depth_height(8, False):
                 raise Exception("Failed to resize width depth height of voxel object.")
 
-        if not self.voxel_object_lite.get_bit_table(cast_address(get_address(out_bit_table), ctypes.c_uint), 64, out_width_depth_height):
-            raise Exception("Unreachable Exception")
+            if not self.voxel_object_lite.get_bit_table(cast_address(get_address(out_bit_table), ctypes.c_uint), 64, out_width_depth_height):
+                raise Exception("Unreachable Exception")
 
-        if out_width_depth_height.value != 8:
-            raise Exception("Unreachable Exception")
+            if out_width_depth_height.value != 8:
+                raise Exception("Unreachable Exception")
 
         out_color_table = (ctypes.c_uint8 * 512)()
 
@@ -137,11 +137,11 @@ class VoxelObject:
 
         index = x + (z * 8) + (y * 64)
 
-        self.color_table[index] = color.id
+        self.color_table[index] = color.index
 
 
 class VoxelEditor:
-    game_controller: GameController = None
+    game_controller: GameController
 
     world_x_min: int
     world_y_min: int
@@ -151,16 +151,15 @@ class VoxelEditor:
     world_y_offset: int
     world_z_offset: int
 
-    voxel_object_cache: dict[str, VoxelObject] = {}
-    is_created_voxel_object: bool = False
+    voxel_object_cache: dict[str, VoxelObject]
 
-    input_vector3: Vector3 = Vector3()
-    output_error: wintypes.INT = wintypes.INT()
-    output_width_depth_height: wintypes.UINT = wintypes.UINT()
-    output_color_index: wintypes.BYTE = wintypes.BYTE()
-    output_voxel_object_deleted: wintypes.BOOL = wintypes.BOOL()
-    output_voxel_object_exists: wintypes.BOOL = wintypes.BOOL()
-    output_voxel_object_property: VoxelObjectProperty = VoxelObjectProperty()
+    input_vector3: Vector3
+    output_error: wintypes.INT
+    output_width_depth_height: wintypes.UINT
+    output_color_index: wintypes.BYTE
+    output_voxel_object_deleted: wintypes.BOOL
+    output_voxel_object_exists: wintypes.BOOL
+    output_voxel_object_property: VoxelObjectProperty
 
     def __init__(self, game: Game):
         self.game_controller = game.controller
@@ -179,6 +178,16 @@ class VoxelEditor:
         self.world_x_offset = self.world_x_min + VOXEL_OBJECT_HALF_SIZE
         self.world_y_offset = self.world_y_min + VOXEL_OBJECT_HALF_SIZE
         self.world_z_offset = self.world_z_min + VOXEL_OBJECT_HALF_SIZE
+
+        self.voxel_object_cache = {}
+
+        self.input_vector3 = Vector3()
+        self.output_error = wintypes.INT()
+        self.output_width_depth_height = wintypes.UINT()
+        self.output_color_index = wintypes.BYTE()
+        self.output_voxel_object_deleted = wintypes.BOOL()
+        self.output_voxel_object_exists = wintypes.BOOL()
+        self.output_voxel_object_property = VoxelObjectProperty()
 
     def _get_voxel_object(self, x: int, y: int, z: int, create_if_not_exists: bool = True) -> VoxelObject | None:
         x = self.world_x_offset + (int((x - self.world_x_min) / VOXEL_OBJECT_SIZE) * VOXEL_OBJECT_SIZE)
@@ -201,8 +210,6 @@ class VoxelEditor:
                     return None
 
                 voxel_object_lite = self.game_controller.create_voxel_object(self.input_vector3, 8, 0, self.output_error)
-
-                self.is_created_voxel_object = True
 
                 if self.output_error.value != CREATE_VOXEL_OBJECT_ERROR_OK:
                     raise Exception("Failed to create voxel object. returned `{0}`".format(get_create_voxel_object_error_string(self.output_error.value)))

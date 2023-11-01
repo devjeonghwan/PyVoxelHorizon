@@ -5,8 +5,8 @@ from pyvoxelhorizon.plugin.type import *
 
 
 class Plugin(metaclass=ABCMeta):
-    game: Game = None
-    directory_path: str = None
+    game: Game
+    directory_path: str
 
     def __init__(self, game: Game, directory_path: str):
         self.game = game

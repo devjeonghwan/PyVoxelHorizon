@@ -1,10 +1,10 @@
 class VoxelColor:
-    id: int = None
+    index: int
     rgb: tuple[int, int, int] | None = None
-    description: str = None
+    description: str
 
-    def __init__(self, id: int, rgb: tuple[int, int, int] = None, description: str = None):
-        self.id = id
+    def __init__(self, index: int, rgb: tuple[int, int, int] = None, description: str = None):
+        self.index = index
 
         if rgb is None:
             self.rgb = None

@@ -12,9 +12,9 @@ from pyvoxelhorizon.plugin.type import *
 
 
 class PluginInfo:
-    module: ModuleType = None
-    name: str = None
-    directory_path: str = None
+    module: ModuleType
+    name: str
+    directory_path: str
 
     def __init__(self, module: ModuleType, name: str, directory_path: str):
         self.module = module
@@ -27,8 +27,8 @@ class PluginInfo:
 
 class PluginLoader(GameHook):
     initialized: bool = False
-    plugin_infos: List[PluginInfo] = []
-    plugins: List[Plugin] = []
+    plugin_infos: List[PluginInfo]
+    plugins: List[Plugin]
 
     game_controller: GameController = None
     network_layer: NetworkLayer = None
@@ -36,6 +36,9 @@ class PluginLoader(GameHook):
 
     def __init__(self, address):
         super().__init__(address)
+
+        self.plugin_infos = []
+        self.plugins = []
 
     def refresh_all_plugins(self):
         for plugin in self.plugins:

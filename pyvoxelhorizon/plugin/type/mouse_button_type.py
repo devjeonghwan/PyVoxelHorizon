@@ -1,7 +1,7 @@
-from enum import Enum, auto
+from enum import Enum
 
 
 class MouseButtonType(Enum):
-    LEFT = auto,
-    RIGHT = auto,
-    WHEEL = auto
+    LEFT = 0,
+    RIGHT = 1,
+    WHEEL = 2
