@@ -5,7 +5,7 @@ import ctypes
 import time
 
 from abc import *
-from typing import TypeVar, Type, Callable, Any
+from typing import Callable, Any
 
 from pyvoxelhorizon.plugin import Plugin
 from pyvoxelhorizon.plugin.type import *
@@ -450,13 +450,13 @@ class CircuitPlugin(Plugin, ABC):
             size_y = int((max_y - min_y) / 50) + 1
             size_z = int((max_z - min_z) / 50) + 1
 
-            element_info = None
+            element = None
 
             if size_x == 1 and size_y == 1 and size_z == 1:
                 voxel_color = voxel_editor.get_voxel_color_if_exists(min_x, min_y, min_z)
 
                 if voxel_color and voxel_color.index in LAMP_COLORS:
-                    element_info = {
+                    element = {
                         "type": LAMP,
                         "inputs": [
                             (min_x - 50, min_y, min_z),
@@ -472,7 +472,7 @@ class CircuitPlugin(Plugin, ABC):
                         ]
                     }
                 elif voxel_color and voxel_color.index in SWITCH_COLORS:
-                    element_info = {
+                    element = {
                         "type": SWITCH,
                         "inputs": [],
                         "outputs": [
@@ -489,51 +489,50 @@ class CircuitPlugin(Plugin, ABC):
                     }
 
             # AND Gate
-            if not element_info:
+            if not element:
                 result = self.load_voxels_gate(voxel_editor, min_x, max_x, min_y, max_y, min_z, max_z, size_x, size_y, size_z, AND_GATE_SHAPES)
 
                 if result:
                     result["type"] = AND_GATE
-                    element_info = result
+                    element = result
 
             # OR Gate
-            if not element_info:
+            if not element:
                 result = self.load_voxels_gate(voxel_editor, min_x, max_x, min_y, max_y, min_z, max_z, size_x, size_y, size_z, OR_GATE_SHAPES)
 
                 if result:
                     result["type"] = OR_GATE
-                    element_info = result
+                    element = result
 
             # XOR Gate
-            if not element_info:
+            if not element:
                 result = self.load_voxels_gate(voxel_editor, min_x, max_x, min_y, max_y, min_z, max_z, size_x, size_y, size_z, XOR_GATE_SHAPES)
 
                 if result:
                     result["type"] = XOR_GATE
-                    element_info = result
+                    element = result
 
             # NOT Gate
-            if not element_info:
+            if not element:
                 result = self.load_voxels_gate(voxel_editor, min_x, max_x, min_y, max_y, min_z, max_z, size_x, size_y, size_z, NOT_GATE_SHAPES)
 
                 if result:
                     result["type"] = NOT_GATE
-                    element_info = result
+                    element = result
 
             # DELAY Gate
-            if not element_info:
+            if not element:
                 result = self.load_voxels_gate(voxel_editor, min_x, max_x, min_y, max_y, min_z, max_z, size_x, size_y, size_z, DELAY_GATE_SHAPES)
 
                 if result:
                     result["type"] = DELAY_GATE
-                    element_info = result
+                    element = result
 
-            if element_info:
-                elements[element_key] = element_info
+            if element:
+                elements[element_key] = element
+                output_elements = {}
 
-                element_info['output_elements'] = []
-
-                scan_positions = element_info['inputs'] + element_info['outputs']
+                scan_positions = element['inputs'] + element['outputs']
                 scan_offsets = [
                     (50, 0, 0),
                     (-50, 0, 0),
@@ -542,7 +541,7 @@ class CircuitPlugin(Plugin, ABC):
                     (0, 50, 0),
                     (0, -50, 0)
                 ]
-                inputs_length = len(element_info['inputs'])
+                inputs_length = len(element['inputs'])
 
                 for scan_position_index in range(len(scan_positions)):
                     is_input = scan_position_index < inputs_length
@@ -565,9 +564,13 @@ class CircuitPlugin(Plugin, ABC):
 
                             if voxel_color and voxel_color.index in ALLOW_COLORS_WITHOUT_WIRE:
                                 child_element_key = self.load_voxels_element_recursively(elements, voxel_editor, scan_x, scan_y, scan_z)
+                                child_element = elements[child_element_key]
+                                child_element_inputs = child_element["inputs"]
 
-                                if not is_input and child_element_key != element_key and voxel_position in elements[child_element_key]["inputs"]:
-                                    element_info['output_elements'].append(child_element_key)
+                                if not is_input and child_element_key != element_key and voxel_position in child_element_inputs:
+                                    output_elements[child_element_key] = child_element_inputs.index(voxel_position)
+
+                element['output_elements'] = output_elements
 
                 return element_key
         else:
@@ -604,7 +607,6 @@ class CircuitPlugin(Plugin, ABC):
 
                     gates = []
                     gate_map = {}
-                    gate_input_count_map = {}
 
                     self.circuit_executor = CircuitExecutor(self.game)
                     self.last_update_time = time.time()
@@ -668,7 +670,6 @@ class CircuitPlugin(Plugin, ABC):
 
                         gates.append(gate)
                         gate_map[element_key] = gate
-                        gate_input_count_map[element_key] = 0
 
                     # Linking..
                     for gate_key in gate_map.keys():
@@ -677,16 +678,18 @@ class CircuitPlugin(Plugin, ABC):
 
                         output_gates = []
 
-                        for output_element in element['output_elements']:
-                            if output_element in gate_map:
-                                output_gate = gate_map[output_element]
+                        for output_element_key in element['output_elements'].keys():
+                            input_index = element['output_elements'][output_element_key]
 
-                                if output_gate.get_input_number() > 0:
-                                    input_id = gate_input_count_map[output_element]
-                                    gate_input_count_map[output_element] += 1
-                                    gate_input_count_map[output_element] %= output_gate.get_input_number()
+                            if output_element_key in gate_map:
+                                output_element = gate_map[output_element_key]
 
-                                    output_gates.append((output_gate, input_id))
+                                input_number = output_element.get_input_number()
+
+                                if input_number != 1 and input_index >= input_number:
+                                    raise Exception("Unexpected input output gate link.")
+
+                                output_gates.append((output_element, input_index % input_number))
                             else:
                                 raise Exception("Not found output element.")
 
