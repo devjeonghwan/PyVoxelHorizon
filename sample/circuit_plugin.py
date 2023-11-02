@@ -1,6 +1,7 @@
 from __future__ import annotations
-
+import sys
 import ctypes
+import math
 
 import time
 
@@ -13,6 +14,8 @@ from pyvoxelhorizon.plugin.game import *
 from pyvoxelhorizon.plugin.game.voxel import *
 from pyvoxelhorizon.plugin.util import Color
 from pyvoxelhorizon.struct import *
+
+sys.setrecursionlimit(100000)
 
 PLUGIN_NAME = "CircuitPlugin"
 
@@ -276,7 +279,8 @@ GATE_OFF_COLOR = 11
 GATE_ON_COLOR = 29
 GATE_COLORS = [GATE_OFF_COLOR, GATE_ON_COLOR]
 
-WIRE_COLORS = [26]
+WIRE_COLOR = 26
+WIRE_COLORS = [WIRE_COLOR]
 
 LAMP = 4
 LAMP_OFF_COLOR = 12
@@ -303,6 +307,14 @@ class CircuitPlugin(Plugin, ABC):
 
     load_mode: bool = False
 
+    copy_mode: bool = False
+    copied_voxels: list[tuple[int, int, int, int]] | None = None
+
+    paste_mode: bool = False
+
+    wire_mode: bool = False
+    wire_start: tuple[int, int, int] | None = None
+
     def on_create(self):
         self.elements = {}
 
@@ -325,7 +337,29 @@ class CircuitPlugin(Plugin, ABC):
             self.last_update_time = 0.0
             self.elements = {}
 
-            self.game.print_line_to_system_dialog("[Circuit] Please right click the board voxel that you want to load as circuit.", Color(0, 255, 0))
+            self.game.print_line_to_system_dialog("[Circuit] Please right click the voxel that you want to load as circuit.", Color(0, 255, 0))
+
+            return True
+
+        if command == 'copy':
+            self.copy_mode = True
+
+            self.game.print_line_to_system_dialog("[Circuit] Please right click the voxel that you want to copy as circuit.", Color(0, 255, 0))
+
+            return True
+
+        if command == 'paste':
+            self.paste_mode = True
+
+            self.game.print_line_to_system_dialog("[Circuit] Please right click the voxel that you want to paste.", Color(0, 255, 0))
+
+            return True
+
+        if command == 'wire':
+            self.wire_mode = True
+            self.wire_start = None
+
+            self.game.print_line_to_system_dialog("[Circuit] Please right click two voxel that you want to wiring.", Color(0, 255, 0))
 
             return True
 
@@ -530,7 +564,7 @@ class CircuitPlugin(Plugin, ABC):
 
             if element:
                 elements[element_key] = element
-                output_elements = {}
+                output_element_pairs = []
 
                 scan_positions = element['inputs'] + element['outputs']
                 scan_offsets = [
@@ -564,13 +598,15 @@ class CircuitPlugin(Plugin, ABC):
 
                             if voxel_color and voxel_color.index in ALLOW_COLORS_WITHOUT_WIRE:
                                 child_element_key = self.load_voxels_element_recursively(elements, voxel_editor, scan_x, scan_y, scan_z)
-                                child_element = elements[child_element_key]
-                                child_element_inputs = child_element["inputs"]
 
-                                if not is_input and child_element_key != element_key and voxel_position in child_element_inputs:
-                                    output_elements[child_element_key] = child_element_inputs.index(voxel_position)
+                                if child_element_key:
+                                    child_element = elements[child_element_key]
+                                    child_element_inputs = child_element["inputs"]
 
-                element['output_elements'] = output_elements
+                                    if not is_input and child_element_key != element_key and voxel_position in child_element_inputs:
+                                        output_element_pairs.append((child_element_key, child_element_inputs.index(voxel_position)))
+
+                element['output_element_pairs'] = output_element_pairs
 
                 return element_key
         else:
@@ -582,122 +618,181 @@ class CircuitPlugin(Plugin, ABC):
         if button_type == MouseButtonType.RIGHT and pressed:
             voxel_editor = VoxelEditor(self.game)
 
-            voxel_color = voxel_editor.get_voxel_color_if_exists(x, y, z)
+            try:
+                voxel_color = voxel_editor.get_voxel_color_if_exists(x, y, z)
 
-            if voxel_color and voxel_color is not None:
-                if not self.load_mode and voxel_color.index in SWITCH_COLORS:
-                    element_key = (x, y, z)
+                if voxel_color and voxel_color is not None:
+                    if not self.load_mode and not self.copy_mode and not self.paste_mode and not self.wire_mode and voxel_color.index in SWITCH_COLORS:
+                        element_key = (x, y, z)
 
-                    if self.elements and element_key in self.elements:
-                        element = self.elements[element_key]
-                        gate = element['gate']
+                        if self.elements and element_key in self.elements:
+                            element = self.elements[element_key]
+                            gate = element['gate']
 
-                        if isinstance(gate, Switch):
-                            if gate.get() is None or not gate.get():
-                                gate.set(True)
-                            else:
-                                gate.set(False)
-
-                if self.load_mode and voxel_color.index in ALLOW_COLORS_WITHOUT_WIRE:
-                    self.load_mode = False
-                    self.game.print_line_to_system_dialog("[Circuit] Loading..", Color(0, 255, 0))
-
-                    elements = {}
-                    self.load_voxels_element_recursively(elements, voxel_editor, x, y, z)
-
-                    gates = []
-                    gate_map = {}
-
-                    self.circuit_executor = CircuitExecutor(self.game)
-                    self.last_update_time = time.time()
-                    self.elements = elements
-
-                    # Creates
-                    for element_key in elements.keys():
-                        element = elements[element_key]
-                        gate = None
-
-                        def on_gate_update(circuit_executor: CircuitExecutor, inner_gate: Gate, output: bool):
-                            inner_element = elements[inner_gate.tag]
-
-                            if isinstance(inner_gate, Switch):
-                                inner_x, inner_y, inner_z = inner_element['indicators'][0]
-
-                                if output:
-                                    circuit_executor.voxel_editor.set_voxel_color(inner_x, inner_y, inner_z, get_voxel_color(SWITCH_ON_COLOR))
+                            if isinstance(gate, Switch):
+                                if gate.get() is None or not gate.get():
+                                    gate.set(True)
                                 else:
-                                    circuit_executor.voxel_editor.set_voxel_color(inner_x, inner_y, inner_z, get_voxel_color(SWITCH_OFF_COLOR))
+                                    gate.set(False)
+                        return True
 
-                            if isinstance(inner_gate, Lamp):
-                                inner_x, inner_y, inner_z = inner_element['indicators'][0]
+                    if self.copy_mode and voxel_color.index in ALLOW_COLORS_WITHOUT_WIRE:
+                        self.copy_mode = False
 
-                                if output:
-                                    circuit_executor.voxel_editor.set_voxel_color(inner_x, inner_y, inner_z, get_voxel_color(LAMP_ON_COLOR))
+                        voxels = []
+                        self.search_voxels_recursively(voxels, voxel_editor, x, y, z, ALLOW_COLORS, allow_y_axis=True)
+
+                        self.copied_voxels = []
+                        for sub_voxel in voxels:
+                            sub_voxel_x, sub_voxel_y, sub_voxel_z = sub_voxel
+                            sub_voxel_color = voxel_editor.get_voxel_color_if_exists(sub_voxel_x, sub_voxel_y, sub_voxel_z)
+
+                            self.copied_voxels.append((sub_voxel_x - x, sub_voxel_y - y, sub_voxel_z - z, sub_voxel_color.index))
+
+                        self.game.print_line_to_system_dialog("[Circuit] Copied! " + str(len(voxels)), Color(0, 255, 0))
+                        return True
+
+                    if self.paste_mode:
+                        self.paste_mode = False
+
+                        for sub_voxel in self.copied_voxels:
+                            sub_voxel_x, sub_voxel_y, sub_voxel_z, sub_voxel_color_index = sub_voxel
+                            sub_voxel_color = VOXEL_COLOR_PALETTE[sub_voxel_color_index]
+
+                            voxel_editor.set_voxel_with_color(x + sub_voxel_x, y + sub_voxel_y, z + sub_voxel_z, True, sub_voxel_color)
+
+                        self.game.print_line_to_system_dialog("[Circuit] Pasted!", Color(0, 255, 0))
+                        return True
+
+                    if self.wire_mode:
+                        if self.wire_start is None:
+                            if voxel_color and voxel_color.index in WIRE_COLORS:
+                                self.wire_start = (x, y, z)
+                                self.game.print_line_to_system_dialog("[Circuit] Selected Start!", Color(0, 255, 0))
+                        else:
+                            if voxel_color and voxel_color.index in WIRE_COLORS:
+                                wire_start = self.wire_start
+                                wire_end = (x, y, z)
+
+                                wire_distance = math.dist(wire_start, wire_end)
+                                step_x = float(wire_end[0] - wire_start[0]) / wire_distance
+                                step_y = float(wire_end[1] - wire_start[1]) / wire_distance
+                                step_z = float(wire_end[2] - wire_start[2]) / wire_distance
+
+                                for index in range(int(wire_distance) - 1):
+                                    target_x = round(float(wire_start[0]) + (step_x * index))
+                                    target_y = round(float(wire_start[1]) + (step_y * index))
+                                    target_z = round(float(wire_start[2]) + (step_z * index))
+
+                                    voxel_editor.set_voxel_with_color(target_x, target_y, target_z, True, VOXEL_COLOR_PALETTE[WIRE_COLOR])
+
+                                self.wire_mode = False
+                                self.wire_start = None
+
+                                self.game.print_line_to_system_dialog("[Circuit] Wired!", Color(0, 255, 0))
+
+                        return True
+
+                    if self.load_mode and voxel_color.index in ALLOW_COLORS_WITHOUT_WIRE:
+                        self.load_mode = False
+
+                        elements = {}
+                        self.load_voxels_element_recursively(elements, voxel_editor, x, y, z)
+
+                        gates = []
+                        gate_map = {}
+
+                        self.circuit_executor = CircuitExecutor(self.game)
+                        self.last_update_time = time.time()
+                        self.elements = elements
+
+                        # Creates
+                        for element_key in elements.keys():
+                            element = elements[element_key]
+                            gate = None
+
+                            def on_gate_update(circuit_executor: CircuitExecutor, inner_gate: Gate, output: bool):
+                                inner_element = elements[inner_gate.tag]
+
+                                if isinstance(inner_gate, Switch):
+                                    inner_x, inner_y, inner_z = inner_element['indicators'][0]
+
+                                    if output:
+                                        circuit_executor.voxel_editor.set_voxel_color(inner_x, inner_y, inner_z, get_voxel_color(SWITCH_ON_COLOR))
+                                    else:
+                                        circuit_executor.voxel_editor.set_voxel_color(inner_x, inner_y, inner_z, get_voxel_color(SWITCH_OFF_COLOR))
+
+                                if isinstance(inner_gate, Lamp):
+                                    inner_x, inner_y, inner_z = inner_element['indicators'][0]
+
+                                    if output:
+                                        circuit_executor.voxel_editor.set_voxel_color(inner_x, inner_y, inner_z, get_voxel_color(LAMP_ON_COLOR))
+                                    else:
+                                        circuit_executor.voxel_editor.set_voxel_color(inner_x, inner_y, inner_z, get_voxel_color(LAMP_OFF_COLOR))
+
+                                if isinstance(inner_gate, AndGate) or isinstance(inner_gate, OrGate) or isinstance(inner_gate, XorGate) or isinstance(inner_gate, NotGate) or isinstance(inner_gate, DelayGate):
+                                    inner_x, inner_y, inner_z = inner_element['indicators'][0]
+
+                                    if output:
+                                        circuit_executor.voxel_editor.set_voxel_color(inner_x, inner_y, inner_z, get_voxel_color(GATE_ON_COLOR))
+                                    else:
+                                        circuit_executor.voxel_editor.set_voxel_color(inner_x, inner_y, inner_z, get_voxel_color(GATE_OFF_COLOR))
+
+                            if element['type'] == AND_GATE:
+                                gate = AndGate()
+                            elif element['type'] == OR_GATE:
+                                gate = OrGate()
+                            elif element['type'] == XOR_GATE:
+                                gate = XorGate()
+                            elif element['type'] == NOT_GATE:
+                                gate = NotGate()
+                            elif element['type'] == DELAY_GATE:
+                                gate = DelayGate()
+                            elif element['type'] == LAMP:
+                                gate = Lamp()
+                            elif element['type'] == SWITCH:
+                                gate = Switch()
+
+                            if not gate:
+                                raise Exception("Unexpected element type.")
+
+                            element['gate'] = gate
+                            gate.tag = element_key
+                            gate.set_output_callback(on_gate_update)
+
+                            self.circuit_executor.append_gate(gate)
+
+                            gates.append(gate)
+                            gate_map[element_key] = gate
+
+                        # Linking..
+                        for gate_key in gate_map.keys():
+                            gate = gate_map[gate_key]
+                            element = elements[gate_key]
+
+                            output_gates = []
+
+                            for output_element_pair in element['output_element_pairs']:
+                                output_element_key, input_index = output_element_pair
+
+                                if output_element_key in gate_map:
+                                    output_element = gate_map[output_element_key]
+
+                                    input_number = output_element.get_input_number()
+
+                                    if input_number != 1 and input_index >= input_number:
+                                        raise Exception("Unexpected input output gate link.")
+
+                                    output_gates.append((output_element, input_index % input_number))
                                 else:
-                                    circuit_executor.voxel_editor.set_voxel_color(inner_x, inner_y, inner_z, get_voxel_color(LAMP_OFF_COLOR))
+                                    raise Exception("Not found output element.")
 
-                            if isinstance(inner_gate, AndGate) or isinstance(inner_gate, OrGate) or isinstance(inner_gate, XorGate) or isinstance(inner_gate, NotGate) or isinstance(inner_gate, DelayGate):
-                                inner_x, inner_y, inner_z = inner_element['indicators'][0]
+                            gate.set_output_gates(output_gates)
 
-                                if output:
-                                    circuit_executor.voxel_editor.set_voxel_color(inner_x, inner_y, inner_z, get_voxel_color(GATE_ON_COLOR))
-                                else:
-                                    circuit_executor.voxel_editor.set_voxel_color(inner_x, inner_y, inner_z, get_voxel_color(GATE_OFF_COLOR))
-
-                        if element['type'] == AND_GATE:
-                            gate = AndGate()
-                        elif element['type'] == OR_GATE:
-                            gate = OrGate()
-                        elif element['type'] == XOR_GATE:
-                            gate = XorGate()
-                        elif element['type'] == NOT_GATE:
-                            gate = NotGate()
-                        elif element['type'] == DELAY_GATE:
-                            gate = DelayGate()
-                        elif element['type'] == LAMP:
-                            gate = Lamp()
-                        elif element['type'] == SWITCH:
-                            gate = Switch()
-
-                        if not gate:
-                            raise Exception("Unexpected element type.")
-
-                        element['gate'] = gate
-                        gate.tag = element_key
-                        gate.set_output_callback(on_gate_update)
-
-                        self.circuit_executor.append_gate(gate)
-
-                        gates.append(gate)
-                        gate_map[element_key] = gate
-
-                    # Linking..
-                    for gate_key in gate_map.keys():
-                        gate = gate_map[gate_key]
-                        element = elements[gate_key]
-
-                        output_gates = []
-
-                        for output_element_key in element['output_elements'].keys():
-                            input_index = element['output_elements'][output_element_key]
-
-                            if output_element_key in gate_map:
-                                output_element = gate_map[output_element_key]
-
-                                input_number = output_element.get_input_number()
-
-                                if input_number != 1 and input_index >= input_number:
-                                    raise Exception("Unexpected input output gate link.")
-
-                                output_gates.append((output_element, input_index % input_number))
-                            else:
-                                raise Exception("Not found output element.")
-
-                        gate.set_output_gates(output_gates)
-
-                    voxel_editor.finish()
-
-                    return True
+                        self.game.print_line_to_system_dialog("[Circuit] Loaded!", Color(0, 255, 0))
+                        return True
+            finally:
+                voxel_editor.finish()
 
         return False
 
@@ -818,6 +913,7 @@ class Gate(metaclass=ABCMeta):
                 else:
                     output_gate[0].inputs[output_gate[1]] -= 1
 
+            for output_gate in self.output_gates:
                 output_gate[0].on_input()
 
 
@@ -836,20 +932,23 @@ class Lamp(Gate, ABC):
 
 
 class Switch(Gate, ABC):
+    status: bool = False
+
     def get_input_number(self) -> int:
         return 0
 
     def get(self) -> bool:
-        return self.output
+        return self.status
 
     def set(self, status: bool):
-        self.out(status)
+        self.status = status
 
     def on_init(self, circuit_executor: CircuitExecutor):
         pass
 
     def on_update(self, circuit_executor: CircuitExecutor):
-        pass
+        if self.output != self.status:
+            self.out(self.status)
 
     def on_input(self):
         pass
