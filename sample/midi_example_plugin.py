@@ -100,7 +100,7 @@ class MidiExamplePlugin(Plugin, ABC):
         if not self.midi_event_index < len(self.midi_events):
             return
 
-        voxel_editor = VoxelEditor(self.game)
+        voxel_editor = VoxelEditorOnline(self.game) if MIDI_NETWORK_MODE else VoxelEditorLocal(self.game)
 
         if self.midi_start_timestamp == -1:
             if MIDI_VISUALIZER_MODE:

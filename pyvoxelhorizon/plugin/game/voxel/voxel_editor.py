@@ -1,3 +1,4 @@
+from abc import ABCMeta, abstractmethod, ABC
 from ctypes import wintypes
 
 from pyvoxelhorizon.enum import *
@@ -5,7 +6,8 @@ from pyvoxelhorizon.interface import *
 from pyvoxelhorizon.plugin.game import *
 from pyvoxelhorizon.struct import *
 from pyvoxelhorizon.util.address_object import *
-from .voxel_color import VoxelColor, VOXEL_COLOR_PALETTE
+
+from pyvoxelhorizon.plugin.game.voxel import VoxelColor, VOXEL_COLOR_PALETTE
 
 VOXEL_OBJECT_SIZE = 400
 VOXEL_OBJECT_8_SIZE = int(VOXEL_OBJECT_SIZE / 8)
@@ -32,6 +34,32 @@ BIT_REVERSE_SELECTORS = [
     ~(0b1 << 6),
     ~(0b1 << 7),
 ]
+
+
+class VoxelEditor(metaclass=ABCMeta):
+    @abstractmethod
+    def get_voxel(self, x: int, y: int, z: int) -> bool:
+        pass
+
+    @abstractmethod
+    def set_voxel(self, x: int, y: int, z: int, value: bool):
+        pass
+
+    @abstractmethod
+    def set_voxel_with_color(self, x: int, y: int, z: int, value: bool, color: VoxelColor):
+        pass
+
+    @abstractmethod
+    def get_voxel_color(self, x: int, y: int, z: int) -> VoxelColor | None:
+        pass
+
+    @abstractmethod
+    def set_voxel_color(self, x: int, y: int, z: int, color: VoxelColor) -> bool:
+        pass
+
+    @abstractmethod
+    def finish(self):
+        pass
 
 
 # Always handle voxel object with '8' width depth height
@@ -115,12 +143,7 @@ class VoxelObject:
         else:
             self.bit_table[byte_index] &= BIT_REVERSE_SELECTORS[bit_index]
 
-    def get_voxel_color(self, x: int, y: int, z: int) -> VoxelColor:
-        index = x + (z * 8) + (y * 64)
-
-        return VOXEL_COLOR_PALETTE[self.color_table[index]]
-
-    def get_voxel_color_if_exists(self, x: int, y: int, z: int) -> VoxelColor | None:
+    def get_voxel_color(self, x: int, y: int, z: int) -> VoxelColor | None:
         index = x + (z * 8) + (y * 64)
 
         byte_index = int(index / 8)
@@ -139,7 +162,7 @@ class VoxelObject:
         self.color_table[index] = color.index
 
 
-class VoxelEditor:
+class VoxelEditorLocal(VoxelEditor, ABC):
     game_controller: GameController
 
     world_x_min: int
@@ -279,18 +302,6 @@ class VoxelEditor:
         voxel_object.set_voxel_color(x, y, z, color)
 
         return True
-
-    def get_voxel_color_if_exists(self, x: int, y: int, z: int) -> VoxelColor | None:
-        voxel_object = self._get_voxel_object(x, y, z, False)
-
-        if not voxel_object:
-            return None
-
-        x = int(x / VOXEL_OBJECT_8_SIZE) % 8
-        y = int(y / VOXEL_OBJECT_8_SIZE) % 8
-        z = int(z / VOXEL_OBJECT_8_SIZE) % 8
-
-        return voxel_object.get_voxel_color_if_exists(x, y, z)
 
     def finish(self):
         for voxel_object in self.voxel_object_cache.values():

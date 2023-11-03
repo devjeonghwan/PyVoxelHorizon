@@ -25,7 +25,12 @@ class VoxelEditorExamplePlugin(Plugin, ABC):
             offset_y = -2400
             offset_z = -1600
 
-            voxel_editor = VoxelEditor(self.game)
+            voxel_editor = None
+
+            # If you want to use voxel editor on online. use `VoxelEditorOnline`
+            voxel_editor = VoxelEditorOnline(self.game)
+            # or use `VoxelEditorLocal` for performance
+            voxel_editor = VoxelEditorLocal(self.game)
 
             voxel_editor.set_voxel_with_color(
                 offset_x + (self.index * 50),

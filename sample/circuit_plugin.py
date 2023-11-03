@@ -296,6 +296,7 @@ ALLOW_COLORS = ALLOW_COLORS_WITHOUT_WIRE + WIRE_COLORS
 MAX_CIRCUIT_SIZE = 100_000_000
 TICK_PER_SECONDS = 10
 
+NETWORK_MODE = False
 
 class CircuitPlugin(Plugin, ABC):
     circuit_executor: CircuitExecutor | None = None
@@ -369,7 +370,7 @@ class CircuitPlugin(Plugin, ABC):
         if value in voxels:
             return
 
-        voxel_color = voxel_editor.get_voxel_color_if_exists(x, y, z)
+        voxel_color = voxel_editor.get_voxel_color(x, y, z)
 
         if voxel_color and voxel_color.index in colors:
             voxels.append(value)
@@ -406,7 +407,7 @@ class CircuitPlugin(Plugin, ABC):
                             y = min_y + (50 * y_index)
                             z = min_z + (50 * z_index)
 
-                            voxel_color = voxel_editor.get_voxel_color_if_exists(x, y, z)
+                            voxel_color = voxel_editor.get_voxel_color(x, y, z)
 
                             if shape_value:
                                 if not (voxel_color and voxel_color.index in GATE_COLORS):
@@ -451,7 +452,7 @@ class CircuitPlugin(Plugin, ABC):
     def load_voxels_element_recursively(self, elements: dict[tuple[int, int, int], dict], voxel_editor: VoxelEditor, x: int, y: int, z: int) -> tuple[int, int, int] | None:
         voxels: list[tuple[int, int, int]] = []
 
-        voxel_color = voxel_editor.get_voxel_color_if_exists(x, y, z)
+        voxel_color = voxel_editor.get_voxel_color(x, y, z)
 
         if voxel_color and voxel_color.index in ALLOW_COLORS_SINGLE:
             voxels.append((x, y, z))
@@ -485,7 +486,7 @@ class CircuitPlugin(Plugin, ABC):
             element = None
 
             if size_x == 1 and size_y == 1 and size_z == 1:
-                voxel_color = voxel_editor.get_voxel_color_if_exists(min_x, min_y, min_z)
+                voxel_color = voxel_editor.get_voxel_color(min_x, min_y, min_z)
 
                 if voxel_color and voxel_color.index in LAMP_COLORS:
                     element = {
@@ -592,7 +593,7 @@ class CircuitPlugin(Plugin, ABC):
                             scan_y = voxel_position[1] + scan_offset[1]
                             scan_z = voxel_position[2] + scan_offset[2]
 
-                            voxel_color = voxel_editor.get_voxel_color_if_exists(scan_x, scan_y, scan_z)
+                            voxel_color = voxel_editor.get_voxel_color(scan_x, scan_y, scan_z)
 
                             if voxel_color and voxel_color.index in ALLOW_COLORS_WITHOUT_WIRE:
                                 child_element_key = self.load_voxels_element_recursively(elements, voxel_editor, scan_x, scan_y, scan_z)
@@ -614,10 +615,10 @@ class CircuitPlugin(Plugin, ABC):
 
     def on_voxel_click(self, x: int, y: int, z: int, button_type: MouseButtonType, pressed: bool) -> bool:
         if button_type == MouseButtonType.RIGHT and pressed:
-            voxel_editor = VoxelEditor(self.game)
+            voxel_editor = VoxelEditorOnline(self.game) if NETWORK_MODE else VoxelEditorLocal(self.game)
 
             try:
-                voxel_color = voxel_editor.get_voxel_color_if_exists(x, y, z)
+                voxel_color = voxel_editor.get_voxel_color(x, y, z)
 
                 if voxel_color and voxel_color is not None:
                     if not self.load_mode and not self.copy_mode and not self.paste_mode and not self.wire_mode and voxel_color.index in SWITCH_COLORS:
@@ -650,7 +651,7 @@ class CircuitPlugin(Plugin, ABC):
                         self.copied_voxels = []
                         for sub_voxel in voxels:
                             sub_voxel_x, sub_voxel_y, sub_voxel_z = sub_voxel
-                            sub_voxel_color = voxel_editor.get_voxel_color_if_exists(sub_voxel_x, sub_voxel_y, sub_voxel_z)
+                            sub_voxel_color = voxel_editor.get_voxel_color(sub_voxel_x, sub_voxel_y, sub_voxel_z)
 
                             self.copied_voxels.append((sub_voxel_x - x, sub_voxel_y - y, sub_voxel_z - z, sub_voxel_color.index))
 
@@ -847,7 +848,7 @@ class CircuitExecutor:
     def update(self):
         first_update = self.voxel_editor is None
 
-        self.voxel_editor = VoxelEditor(self.game)
+        self.voxel_editor = VoxelEditorOnline(self.game) if NETWORK_MODE else VoxelEditorLocal(self.game)
 
         if first_update:
             for gate in self.gates:
