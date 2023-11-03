@@ -15,8 +15,6 @@ from pyvoxelhorizon.plugin.game.voxel import *
 from pyvoxelhorizon.plugin.util import Color
 from pyvoxelhorizon.struct import *
 
-sys.setrecursionlimit(100000)
-
 PLUGIN_NAME = "CircuitPlugin"
 
 AND_GATE = 0
@@ -296,6 +294,7 @@ ALLOW_COLORS_WITHOUT_WIRE = GATE_COLORS + LAMP_COLORS + SWITCH_COLORS
 ALLOW_COLORS_SINGLE = LAMP_COLORS + SWITCH_COLORS
 ALLOW_COLORS = ALLOW_COLORS_WITHOUT_WIRE + WIRE_COLORS
 
+MAX_CIRCUIT_SIZE = 100_000_000
 TICK_PER_SECONDS = 10
 
 
@@ -331,7 +330,7 @@ class CircuitPlugin(Plugin, ABC):
                 self.last_update_time = current_time
 
     def on_command(self, command: str) -> bool:
-        if command == 'load':
+        if command == 'cc_load':
             self.load_mode = True
             self.circuit_executor = None
             self.last_update_time = 0.0
@@ -341,25 +340,25 @@ class CircuitPlugin(Plugin, ABC):
 
             return True
 
-        if command == 'copy':
+        if command == 'cc_copy':
             self.copy_mode = True
 
-            self.game.print_line_to_system_dialog("[Circuit] Please right click the voxel that you want to copy as circuit.", Color(0, 255, 0))
+            self.game.print_line_to_system_dialog("[Circuit] Please right click the voxel of the circuit you want to copy.", Color(0, 255, 0))
 
             return True
 
-        if command == 'paste':
+        if command == 'cc_paste':
             self.paste_mode = True
 
-            self.game.print_line_to_system_dialog("[Circuit] Please right click the voxel that you want to paste.", Color(0, 255, 0))
+            self.game.print_line_to_system_dialog("[Circuit] Please right click the voxel where you want to paste the circuit.", Color(0, 255, 0))
 
             return True
 
-        if command == 'wire':
+        if command == 'cc_wire':
             self.wire_mode = True
             self.wire_start = None
 
-            self.game.print_line_to_system_dialog("[Circuit] Please right click two voxel that you want to wiring.", Color(0, 255, 0))
+            self.game.print_line_to_system_dialog("[Circuit] Please right click the two voxels you want to wire.", Color(0, 255, 0))
 
             return True
 
@@ -634,13 +633,20 @@ class CircuitPlugin(Plugin, ABC):
                                     gate.set(True)
                                 else:
                                     gate.set(False)
+
                         return True
 
                     if self.copy_mode and voxel_color.index in ALLOW_COLORS_WITHOUT_WIRE:
                         self.copy_mode = False
 
                         voxels = []
-                        self.search_voxels_recursively(voxels, voxel_editor, x, y, z, ALLOW_COLORS, allow_y_axis=True)
+
+                        old_limit = sys.getrecursionlimit()
+                        sys.setrecursionlimit(MAX_CIRCUIT_SIZE)
+                        try:
+                            self.search_voxels_recursively(voxels, voxel_editor, x, y, z, ALLOW_COLORS, allow_y_axis=True)
+                        finally:
+                            sys.setrecursionlimit(old_limit)
 
                         self.copied_voxels = []
                         for sub_voxel in voxels:
@@ -668,7 +674,7 @@ class CircuitPlugin(Plugin, ABC):
                         if self.wire_start is None:
                             if voxel_color and voxel_color.index in WIRE_COLORS:
                                 self.wire_start = (x, y, z)
-                                self.game.print_line_to_system_dialog("[Circuit] Selected Start!", Color(0, 255, 0))
+                                self.game.print_line_to_system_dialog("[Circuit] Selected Wire Start!", Color(0, 255, 0))
                         else:
                             if voxel_color and voxel_color.index in WIRE_COLORS:
                                 wire_start = self.wire_start
@@ -680,9 +686,9 @@ class CircuitPlugin(Plugin, ABC):
                                 step_z = float(wire_end[2] - wire_start[2]) / wire_distance
 
                                 for index in range(int(wire_distance) - 1):
-                                    target_x = round(float(wire_start[0]) + (step_x * index))
-                                    target_y = round(float(wire_start[1]) + (step_y * index))
-                                    target_z = round(float(wire_start[2]) + (step_z * index))
+                                    target_x = math.floor(float(wire_start[0]) + (step_x * index))
+                                    target_y = math.floor(float(wire_start[1]) + (step_y * index))
+                                    target_z = math.floor(float(wire_start[2]) + (step_z * index))
 
                                     voxel_editor.set_voxel_with_color(target_x, target_y, target_z, True, VOXEL_COLOR_PALETTE[WIRE_COLOR])
 
@@ -697,7 +703,13 @@ class CircuitPlugin(Plugin, ABC):
                         self.load_mode = False
 
                         elements = {}
-                        self.load_voxels_element_recursively(elements, voxel_editor, x, y, z)
+
+                        old_limit = sys.getrecursionlimit()
+                        sys.setrecursionlimit(MAX_CIRCUIT_SIZE)
+                        try:
+                            self.load_voxels_element_recursively(elements, voxel_editor, x, y, z)
+                        finally:
+                            sys.setrecursionlimit(old_limit)
 
                         gates = []
                         gate_map = {}
