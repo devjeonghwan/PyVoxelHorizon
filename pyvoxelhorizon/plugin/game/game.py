@@ -16,3 +16,6 @@ class Game:
 
     def print_line_to_system_dialog(self, message: str, color: Color = Color(255, 255, 255)):
         self.controller.write_text_to_system_dlg_w(color.get_argb(), message + "\n")
+
+    def print_to_console(self, message: str, color: Color = Color(255, 255, 255)):
+        self.controller.write_text_to_console(message, len(message), color.get_argb())

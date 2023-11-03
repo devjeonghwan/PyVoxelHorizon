@@ -636,7 +636,7 @@ class CircuitPlugin(Plugin, ABC):
 
                         return True
 
-                    if self.copy_mode and voxel_color.index in ALLOW_COLORS_WITHOUT_WIRE:
+                    if self.copy_mode and voxel_color.index in ALLOW_COLORS:
                         self.copy_mode = False
 
                         voxels = []
@@ -677,18 +677,31 @@ class CircuitPlugin(Plugin, ABC):
                                 self.game.print_line_to_system_dialog("[Circuit] Selected Wire Start!", Color(0, 255, 0))
                         else:
                             if voxel_color and voxel_color.index in WIRE_COLORS:
-                                wire_start = self.wire_start
-                                wire_end = (x, y, z)
+                                wire_start = (min(self.wire_start[0], x), min(self.wire_start[1], y), min(self.wire_start[2], z))
+                                wire_end = (max(self.wire_start[0], x), max(self.wire_start[1], y), max(self.wire_start[2], z))
 
-                                wire_distance = math.dist(wire_start, wire_end)
-                                step_x = float(wire_end[0] - wire_start[0]) / wire_distance
-                                step_y = float(wire_end[1] - wire_start[1]) / wire_distance
-                                step_z = float(wire_end[2] - wire_start[2]) / wire_distance
+                                x_straight = wire_end[0] == wire_start[0]
+                                y_straight = wire_end[1] == wire_start[1]
+                                z_straight = wire_end[2] == wire_start[2]
 
-                                for index in range(int(wire_distance) - 1):
-                                    target_x = math.floor(float(wire_start[0]) + (step_x * index))
-                                    target_y = math.floor(float(wire_start[1]) + (step_y * index))
-                                    target_z = math.floor(float(wire_start[2]) + (step_z * index))
+                                straight_count = (1 if x_straight else 0) + (1 if y_straight else 0) + (1 if z_straight else 0)
+
+                                if straight_count != 2:
+                                    self.game.print_line_to_system_dialog("[Circuit] The two dimensions must be straight.", Color(0, 255, 0))
+                                    self.wire_mode = False
+                                    self.wire_start = None
+
+                                    return True
+
+                                wire_distance = int(math.dist(wire_start, wire_end) / 50)
+                                step_x = 0 if x_straight else 50
+                                step_y = 0 if y_straight else 50
+                                step_z = 0 if z_straight else 50
+
+                                for index in range(wire_distance):
+                                    target_x = wire_start[0] + (step_x * index)
+                                    target_y = wire_start[1] + (step_y * index)
+                                    target_z = wire_start[2] + (step_z * index)
 
                                     voxel_editor.set_voxel_with_color(target_x, target_y, target_z, True, VOXEL_COLOR_PALETTE[WIRE_COLOR])
 
