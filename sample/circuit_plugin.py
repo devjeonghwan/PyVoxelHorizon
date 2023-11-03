@@ -1,17 +1,16 @@
 from __future__ import annotations
-import sys
+
 import ctypes
 import math
-
+import sys
 import time
-
 from abc import *
 from typing import Callable, Any
 
 from pyvoxelhorizon.plugin import Plugin
-from pyvoxelhorizon.plugin.type import *
 from pyvoxelhorizon.plugin.game import *
 from pyvoxelhorizon.plugin.game.voxel import *
+from pyvoxelhorizon.plugin.type import *
 from pyvoxelhorizon.plugin.util import Color
 from pyvoxelhorizon.struct import *
 
@@ -857,6 +856,9 @@ class CircuitExecutor:
         for gate in self.gates:
             gate.update(self)
 
+        for gate in self.gates:
+            gate.run_output_callback(self)
+
         self.voxel_editor.finish()
 
 
@@ -889,6 +891,7 @@ class Gate(metaclass=ABCMeta):
     def update(self, circuit_executor: CircuitExecutor):
         self.on_update(circuit_executor)
 
+    def run_output_callback(self, circuit_executor: CircuitExecutor):
         if self.output_require_callback:
             self.output_require_callback = False
 
