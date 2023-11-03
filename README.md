@@ -43,6 +43,7 @@ flowchart TD
 3. Write plugin code and Save into `{VOXEL HORIZON Path}/Plugin/bin/PyVoxelHorizon/plugins`
     - [Basic Plugin](sample/basic_plugin.py)
     - [MIDI Player Plugin](sample/midi_example_plugin.py)
+    - [Circuit Plugin](sample/circuit_plugin.py)
 4. Run VOXEL HORIZON
 5. Press the '`' key to open the console
 6. Enter the `load_plugin PyVoxelHorizon_x64_Release.dll` command
@@ -61,6 +62,13 @@ Sorry, Not ready yet.
 
 ## How to development `PyVoxelHorizon Wrapper Generator`?
 Sorry, Not ready yet.
+
+## Demo Video
+### MIDI Player Plugin
+https://github.com/devjeonghwan/PyVoxelHorizon/assets/13144936/64b9ab73-86ae-467b-b401-2fca6012fde6
+
+### Circuit Plugin
+https://github.com/devjeonghwan/PyVoxelHorizon/assets/13144936/b594ffd3-d8a6-45ee-aac1-d11349f45e61
 
 ## Troubleshoot
 ### `ModuleNotFoundError` occurred when running the plugin.
