@@ -298,6 +298,7 @@ TICK_PER_SECONDS = 10
 
 NETWORK_MODE = False
 
+
 class CircuitPlugin(Plugin, ABC):
     circuit_executor: CircuitExecutor | None = None
     elements: dict
@@ -340,6 +341,16 @@ class CircuitPlugin(Plugin, ABC):
 
             return True
 
+        if command == 'cc_clear':
+            self.load_mode = False
+            self.circuit_executor = None
+            self.last_update_time = 0.0
+            self.elements = {}
+
+            self.game.print_line_to_system_dialog("[Circuit] Cleared.", Color(0, 255, 0))
+
+            return True
+
         if command == 'cc_copy':
             self.copy_mode = True
 
@@ -364,7 +375,7 @@ class CircuitPlugin(Plugin, ABC):
 
         return False
 
-    def search_voxels_recursively(self, voxels: list[tuple[int, int, int]], voxel_editor: VoxelEditor, x: int, y: int, z: int, colors: list[int], allow_y_axis: bool = False):
+    def search_voxels_recursively(self, voxels: list[tuple[int, int, int]], voxel_editor: VoxelEditor, x: int, y: int, z: int, colors: list[int] | None, allow_y_axis: bool = False):
         value = (x, y, z)
 
         if value in voxels:
@@ -372,7 +383,7 @@ class CircuitPlugin(Plugin, ABC):
 
         voxel_color = voxel_editor.get_voxel_color(x, y, z)
 
-        if voxel_color and voxel_color.index in colors:
+        if voxel_color and (colors is None or voxel_color.index in colors):
             voxels.append(value)
 
             self.search_voxels_recursively(voxels, voxel_editor, x + 50, y, z, colors, allow_y_axis)
@@ -644,7 +655,7 @@ class CircuitPlugin(Plugin, ABC):
                         old_limit = sys.getrecursionlimit()
                         sys.setrecursionlimit(MAX_CIRCUIT_SIZE)
                         try:
-                            self.search_voxels_recursively(voxels, voxel_editor, x, y, z, ALLOW_COLORS, allow_y_axis=True)
+                            self.search_voxels_recursively(voxels, voxel_editor, x, y, z, None, allow_y_axis=True)
                         finally:
                             sys.setrecursionlimit(old_limit)
 
@@ -814,6 +825,8 @@ class CircuitPlugin(Plugin, ABC):
 
                             gate.set_output_gates(output_gates)
 
+                        self.circuit_executor.sort_gates()
+
                         self.game.print_line_to_system_dialog("[Circuit] Loaded!", Color(0, 255, 0))
                         return True
             finally:
@@ -842,6 +855,16 @@ class CircuitPlugin(Plugin, ABC):
                 return True
 
 
+def _get_child_gates(gates: list[Gate]) -> list[Gate]:
+    child_gates = []
+
+    for gate in gates:
+        for output_gate in gate.output_gates:
+            child_gates.append(output_gate[0])
+
+    return child_gates
+
+
 class CircuitExecutor:
     game: Game
     voxel_editor: VoxelEditor | None
@@ -857,6 +880,49 @@ class CircuitExecutor:
         self.gates.append(gate)
 
         return gate
+
+    def sort_gates(self):
+        root_gates = set(self.gates)
+
+        for gate in self.gates:
+            for output_gate in gate.output_gates:
+                if output_gate[0] in root_gates:
+                    root_gates.remove(output_gate[0])
+
+        if len(root_gates) == 0:
+            return
+
+        sorted_gates: list[Gate] = []
+        sorted_gates_set: set[Gate] = set()
+
+        search_target = list(root_gates)
+
+        sorted_gates.extend(search_target)
+        for gate in search_target:
+            sorted_gates_set.add(gate)
+
+        while True:
+            if len(search_target) == 0:
+                break
+
+            next_level = _get_child_gates(search_target)
+
+            for gate in next_level:
+                if gate in sorted_gates_set:
+                    sorted_gates.remove(gate)
+                    next_level.remove(gate)
+                else:
+                    sorted_gates_set.add(gate)
+
+                sorted_gates.append(gate)
+
+            search_target = next_level
+
+        for gate in self.gates:
+            if gate not in sorted_gates_set:
+                sorted_gates.append(gate)
+
+        self.gates = sorted_gates
 
     def update(self):
         first_update = self.voxel_editor is None

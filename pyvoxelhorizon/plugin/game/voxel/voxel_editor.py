@@ -260,27 +260,27 @@ class VoxelEditorLocal(VoxelEditor, ABC):
         if not voxel_object:
             return False
 
-        x = int((x - voxel_object.x) / VOXEL_OBJECT_8_SIZE)
-        y = int((y - voxel_object.y) / VOXEL_OBJECT_8_SIZE)
-        z = int((z - voxel_object.z) / VOXEL_OBJECT_8_SIZE)
+        x = int((x - self.world_x_min) / VOXEL_OBJECT_8_SIZE) % 8
+        y = int((y - self.world_y_min) / VOXEL_OBJECT_8_SIZE) % 8
+        z = int((z - self.world_z_min) / VOXEL_OBJECT_8_SIZE) % 8
 
         return voxel_object.get_voxel(x, y, z)
 
     def set_voxel(self, x: int, y: int, z: int, value: bool):
         voxel_object = self._get_voxel_object(x, y, z, True)
 
-        x = int((x - voxel_object.x) / VOXEL_OBJECT_8_SIZE)
-        y = int((y - voxel_object.y) / VOXEL_OBJECT_8_SIZE)
-        z = int((z - voxel_object.z) / VOXEL_OBJECT_8_SIZE)
+        x = int((x - self.world_x_min) / VOXEL_OBJECT_8_SIZE) % 8
+        y = int((y - self.world_y_min) / VOXEL_OBJECT_8_SIZE) % 8
+        z = int((z - self.world_z_min) / VOXEL_OBJECT_8_SIZE) % 8
 
         voxel_object.set_voxel(x, y, z, value)
 
     def set_voxel_with_color(self, x: int, y: int, z: int, value: bool, color: VoxelColor):
         voxel_object = self._get_voxel_object(x, y, z, True)
 
-        x = int((x - voxel_object.x) / VOXEL_OBJECT_8_SIZE)
-        y = int((y - voxel_object.y) / VOXEL_OBJECT_8_SIZE)
-        z = int((z - voxel_object.z) / VOXEL_OBJECT_8_SIZE)
+        x = int((x - self.world_x_min) / VOXEL_OBJECT_8_SIZE) % 8
+        y = int((y - self.world_y_min) / VOXEL_OBJECT_8_SIZE) % 8
+        z = int((z - self.world_z_min) / VOXEL_OBJECT_8_SIZE) % 8
 
         voxel_object.set_voxel(x, y, z, value)
         voxel_object.set_voxel_color(x, y, z, color)
@@ -291,9 +291,9 @@ class VoxelEditorLocal(VoxelEditor, ABC):
         if not voxel_object:
             return None
 
-        x = int((x - voxel_object.x) / VOXEL_OBJECT_8_SIZE)
-        y = int((y - voxel_object.y) / VOXEL_OBJECT_8_SIZE)
-        z = int((z - voxel_object.z) / VOXEL_OBJECT_8_SIZE)
+        x = int((x - self.world_x_min) / VOXEL_OBJECT_8_SIZE) % 8
+        y = int((y - self.world_y_min) / VOXEL_OBJECT_8_SIZE) % 8
+        z = int((z - self.world_z_min) / VOXEL_OBJECT_8_SIZE) % 8
 
         return voxel_object.get_voxel_color(x, y, z)
 
@@ -303,9 +303,9 @@ class VoxelEditorLocal(VoxelEditor, ABC):
         if not voxel_object:
             return False
 
-        x = int((x - voxel_object.x) / VOXEL_OBJECT_8_SIZE)
-        y = int((y - voxel_object.y) / VOXEL_OBJECT_8_SIZE)
-        z = int((z - voxel_object.z) / VOXEL_OBJECT_8_SIZE)
+        x = int((x - self.world_x_min) / VOXEL_OBJECT_8_SIZE) % 8
+        y = int((y - self.world_y_min) / VOXEL_OBJECT_8_SIZE) % 8
+        z = int((z - self.world_z_min) / VOXEL_OBJECT_8_SIZE) % 8
 
         voxel_object.set_voxel_color(x, y, z, color)
 
