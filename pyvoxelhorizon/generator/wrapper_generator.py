@@ -13,6 +13,7 @@ GENERATE_TARGETS = [
     "RENDER_MODE",
     "CREATE_VOXEL_OBJECT_ERROR",
     "MIDI_SIGNAL_TYPE",
+    "SINGLE_VOXEL_EDIT_RESULT",
 
     # Interface
     "IVHController",

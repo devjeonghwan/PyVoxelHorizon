@@ -3,9 +3,9 @@ from ctypes import wintypes
 
 from pyvoxelhorizon.interface import *
 from pyvoxelhorizon.plugin.game import *
-from pyvoxelhorizon.struct import *
-from pyvoxelhorizon.plugin.game.voxel import VoxelEditor
 from pyvoxelhorizon.plugin.game.voxel import VoxelColor, VOXEL_COLOR_PALETTE
+from pyvoxelhorizon.plugin.game.voxel import VoxelEditor
+from pyvoxelhorizon.struct import *
 
 VOXEL_OBJECT_SIZE = 400
 VOXEL_OBJECT_8_SIZE = int(VOXEL_OBJECT_SIZE / 8)
