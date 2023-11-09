@@ -241,7 +241,7 @@ class VoxelEditorLocal(VoxelEditor, ABC):
                 voxel_object_lite = self.game_controller.create_voxel_object(self.input_vector3, 8, 0, self.output_error)
 
                 if self.output_error.value != CREATE_VOXEL_OBJECT_ERROR_OK:
-                    raise Exception("Failed to create voxel object. returned `{0}`".format(get_create_voxel_object_error_string(self.output_error.value)))
+                    raise Exception("Failed to create voxel object. returned `{0}`.".format(get_create_voxel_object_error_string(self.output_error.value)))
 
                 voxel_object = VoxelObject(voxel_object_lite, x, y, z)
                 voxel_object.clear()

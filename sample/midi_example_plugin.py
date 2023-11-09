@@ -2,11 +2,13 @@ import math
 import os
 import time
 from abc import ABC
+from ctypes import wintypes
 from typing import List
 
 import numpy
 import umidiparser
 
+from pyvoxelhorizon.util.address_object import *
 from pyvoxelhorizon.plugin import Plugin
 from pyvoxelhorizon.plugin.game.voxel import *
 from pyvoxelhorizon.plugin.type import *
@@ -26,6 +28,7 @@ MIDI_NOTE_IMAGE_CHANNEL_COLORS = [7, 18, 24, 27]
 
 MIDI_NETWORK_MODE = False
 MIDI_NETWORK_BUFFER = 3000
+MIDI_VISUALIZER_ONLINE_MODE = False
 MIDI_VISUALIZER_MODE = True
 
 
@@ -100,7 +103,7 @@ class MidiExamplePlugin(Plugin, ABC):
         if not self.midi_event_index < len(self.midi_events):
             return
 
-        voxel_editor = VoxelEditorOnline(self.game) if MIDI_NETWORK_MODE else VoxelEditorLocal(self.game)
+        voxel_editor = VoxelEditorOnline(self.game) if MIDI_VISUALIZER_ONLINE_MODE else VoxelEditorLocal(self.game)
 
         if self.midi_start_timestamp == -1:
             if MIDI_VISUALIZER_MODE:
@@ -176,6 +179,15 @@ class MidiExamplePlugin(Plugin, ABC):
                         self.game.controller.midi_note_on_immediately(midi_event.channel, midi_event.note, midi_event.velocity)
                     elif midi_event.status == umidiparser.PROGRAM_CHANGE:
                         self.game.controller.midi_change_program_immediately(midi_event.channel, midi_event.program)
+                    elif midi_event.status == umidiparser.CONTROL_CHANGE:
+                        self.game.controller.midi_change_control_immediately(midi_event.channel, midi_event.control, midi_event.value)
+                    elif midi_event.status == umidiparser.SYSEX:
+                        sysex_bytes = wintypes.BYTE * len(midi_event.data)
+                        sysex_bytes.from_buffer(midi_event.data)
+
+                        self.game.controller.midi_sysex_message_immediately(cast_address(get_address(sysex_bytes), wintypes.BYTE), len(midi_event.data))
+                    elif midi_event.status == umidiparser.PITCHWHEEL:
+                        self.game.controller.midi_change_pitch_bend_immediately(midi_event.channel, midi_event.data[0], midi_event.data[1])
 
                 self.midi_event_index += 1
         else:
@@ -194,6 +206,15 @@ class MidiExamplePlugin(Plugin, ABC):
                         self.game.controller.midi_push_note_on(midi_event.channel, midi_event.note, midi_event.velocity, int(self.midi_playback))
                     elif midi_event.status == umidiparser.PROGRAM_CHANGE:
                         self.game.controller.midi_push_change_program(midi_event.channel, midi_event.program, int(self.midi_playback))
+                    elif midi_event.status == umidiparser.CONTROL_CHANGE:
+                        self.game.controller.midi_push_change_control(midi_event.channel, midi_event.control, midi_event.value, int(self.midi_playback))
+                    elif midi_event.status == umidiparser.SYSEX:
+                        sysex_bytes = wintypes.BYTE * len(midi_event.data)
+                        sysex_bytes.from_buffer(midi_event.data)
+
+                        self.game.controller.midi_push_sysex_message(cast_address(get_address(sysex_bytes), wintypes.BYTE), len(midi_event.data), int(self.midi_playback))
+                    elif midi_event.status == umidiparser.PITCHWHEEL:
+                        self.game.controller.midi_change_pitch_bend_immediately(midi_event.channel, midi_event.data[0], midi_event.data[1])
 
                 self.midi_event_index += 1
 
