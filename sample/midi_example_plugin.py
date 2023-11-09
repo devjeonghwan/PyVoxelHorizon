@@ -26,8 +26,7 @@ MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Z = 2350
 MIDI_NOTE_IMAGE_BACKGROUND_COLOR = 11
 MIDI_NOTE_IMAGE_CHANNEL_COLORS = [7, 18, 24, 27]
 
-MIDI_NETWORK_MODE = False
-MIDI_NETWORK_BUFFER = 3000
+MIDI_NETWORK_MODE = True
 MIDI_VISUALIZER_ONLINE_MODE = False
 MIDI_VISUALIZER_MODE = True
 
@@ -90,7 +89,7 @@ class MidiExamplePlugin(Plugin, ABC):
     midi_start_timestamp: float = 0
     midi_playback: int = 0
 
-    midi_note_image_previous: numpy.ndarray = None
+    midi_note_image_previous: numpy.ndarray | None = None
     midi_note_image: numpy.ndarray = None
 
     def on_create(self):
@@ -191,38 +190,21 @@ class MidiExamplePlugin(Plugin, ABC):
 
                 self.midi_event_index += 1
         else:
-            self.game.controller.midi_begin_push_message()
-
             while self.midi_event_index < len(self.midi_events):
                 midi_event = self.midi_events[self.midi_event_index]
                 event_delta_ms = midi_event.delta_us / 1000
 
+                if self.midi_playback + event_delta_ms > midi_new_playback:
+                    break
+
                 self.midi_playback += event_delta_ms
-
-                if midi_event.is_channel():
-                    if midi_event.status == umidiparser.NOTE_OFF or (midi_event.status == umidiparser.NOTE_ON and midi_event.velocity == 0):
-                        self.game.controller.midi_push_note_off(midi_event.channel, midi_event.note, 0, int(self.midi_playback))
-                    elif midi_event.status == umidiparser.NOTE_ON:
-                        self.game.controller.midi_push_note_on(midi_event.channel, midi_event.note, midi_event.velocity, int(self.midi_playback))
-                    elif midi_event.status == umidiparser.PROGRAM_CHANGE:
-                        self.game.controller.midi_push_change_program(midi_event.channel, midi_event.program, int(self.midi_playback))
-                    elif midi_event.status == umidiparser.CONTROL_CHANGE:
-                        self.game.controller.midi_push_change_control(midi_event.channel, midi_event.control, midi_event.value, int(self.midi_playback))
-                    elif midi_event.status == umidiparser.SYSEX:
-                        sysex_bytes = wintypes.BYTE * len(midi_event.data)
-                        sysex_bytes.from_buffer(midi_event.data)
-
-                        self.game.controller.midi_push_sysex_message(cast_address(get_address(sysex_bytes), wintypes.BYTE), len(midi_event.data), int(self.midi_playback))
-                    elif midi_event.status == umidiparser.PITCHWHEEL:
-                        self.game.controller.midi_change_pitch_bend_immediately(midi_event.channel, midi_event.data[0], midi_event.data[1])
-
                 self.midi_event_index += 1
 
-            self.game.controller.midi_end_push_message()
-
     def on_command(self, command: str) -> bool:
-        if command == 'play':
-            midi_file = umidiparser.MidiFile(os.path.join(self.directory_path, "98_OVER.mid"), reuse_event_object=False)
+        tokens = command.split(" ")
+
+        if tokens[0].lower() == "midi_play":
+            midi_file = umidiparser.MidiFile(os.path.join(self.directory_path, tokens[1]), reuse_event_object=False)
 
             if MIDI_VISUALIZER_MODE:
                 self.midi_note_image = render_midi_notes(midi_file, MIDI_NOTE_IMAGE_SCALE_RATIO, buffer_for_y=MIDI_NOTE_IMAGE_TIMING_RANGE)
@@ -231,6 +213,7 @@ class MidiExamplePlugin(Plugin, ABC):
             for midi_event in midi_file:
                 self.midi_events.append(midi_event)
 
+            self.midi_note_image_previous = None
             self.midi_event_index = 0
             self.midi_start_timestamp = -1
             self.midi_playback = 0
@@ -238,9 +221,41 @@ class MidiExamplePlugin(Plugin, ABC):
             if MIDI_NETWORK_MODE:
                 self.game.controller.enable_broadcast_mode_immediately()
 
+                self.game.controller.midi_begin_push_message()
+
+                local_midi_playback = 0
+                local_midi_event_index = 0
+
+                while local_midi_event_index < len(self.midi_events):
+                    midi_event = self.midi_events[local_midi_event_index]
+                    event_delta_ms = midi_event.delta_us / 1000
+
+                    local_midi_playback += event_delta_ms
+
+                    if midi_event.is_channel():
+                        if midi_event.status == umidiparser.NOTE_OFF or (midi_event.status == umidiparser.NOTE_ON and midi_event.velocity == 0):
+                            self.game.controller.midi_push_note_off(midi_event.channel, midi_event.note, 0, int(local_midi_playback))
+                        elif midi_event.status == umidiparser.NOTE_ON:
+                            self.game.controller.midi_push_note_on(midi_event.channel, midi_event.note, midi_event.velocity, int(local_midi_playback))
+                        elif midi_event.status == umidiparser.PROGRAM_CHANGE:
+                            self.game.controller.midi_push_change_program(midi_event.channel, midi_event.program, int(local_midi_playback))
+                        elif midi_event.status == umidiparser.CONTROL_CHANGE:
+                            self.game.controller.midi_push_change_control(midi_event.channel, midi_event.control, midi_event.value, int(local_midi_playback))
+                        elif midi_event.status == umidiparser.SYSEX:
+                            sysex_bytes = wintypes.BYTE * len(midi_event.data)
+                            sysex_bytes.from_buffer(midi_event.data)
+
+                            self.game.controller.midi_push_sysex_message(cast_address(get_address(sysex_bytes), wintypes.BYTE), len(midi_event.data), int(local_midi_playback))
+                        elif midi_event.status == umidiparser.PITCHWHEEL:
+                            self.game.controller.midi_push_change_pitch_bend(midi_event.channel, midi_event.data[0], midi_event.data[1], int(local_midi_playback))
+
+                    local_midi_event_index += 1
+
+                self.game.controller.midi_end_push_message()
+
             return True
 
-        if command == 'stop':
+        if tokens[0].lower() == "midi_stop":
             off_checks = {}
 
             for midi_event in self.midi_events:
@@ -260,6 +275,7 @@ class MidiExamplePlugin(Plugin, ABC):
 
             if MIDI_NETWORK_MODE:
                 self.game.controller.disable_broadcast_mode_immediately()
+                self.game.controller.midi_reset()
 
             return True
 

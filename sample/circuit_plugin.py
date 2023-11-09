@@ -331,7 +331,9 @@ class CircuitPlugin(Plugin, ABC):
                 self.last_update_time = current_time
 
     def on_command(self, command: str) -> bool:
-        if command == 'cc_load':
+        tokens = command.split(" ")
+
+        if tokens[0].lower() == 'cc_load':
             self.load_mode = True
             self.circuit_executor = None
             self.last_update_time = 0.0
@@ -341,7 +343,7 @@ class CircuitPlugin(Plugin, ABC):
 
             return True
 
-        if command == 'cc_clear':
+        if tokens[0].lower() == 'cc_clear':
             self.load_mode = False
             self.circuit_executor = None
             self.last_update_time = 0.0
@@ -351,21 +353,21 @@ class CircuitPlugin(Plugin, ABC):
 
             return True
 
-        if command == 'cc_copy':
+        if tokens[0].lower() == 'cc_copy':
             self.copy_mode = True
 
             self.game.print_line_to_system_dialog("[Circuit] Please right click the voxel of the circuit you want to copy.", Color(0, 255, 0))
 
             return True
 
-        if command == 'cc_paste':
+        if tokens[0].lower() == 'cc_paste':
             self.paste_mode = True
 
             self.game.print_line_to_system_dialog("[Circuit] Please right click the voxel where you want to paste the circuit.", Color(0, 255, 0))
 
             return True
 
-        if command == 'cc_wire':
+        if tokens[0].lower() == 'cc_wire':
             self.wire_mode = True
             self.wire_start = None
 
