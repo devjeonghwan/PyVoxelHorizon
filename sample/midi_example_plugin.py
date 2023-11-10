@@ -27,11 +27,26 @@ MIDI_NOTE_IMAGE_BACKGROUND_COLOR = 11
 MIDI_NOTE_IMAGE_CHANNEL_COLORS = [7, 18, 24, 27]
 
 MIDI_NETWORK_MODE = False
-MIDI_VISUALIZER_ONLINE_MODE = True
-MIDI_VISUALIZER_MODE = True
+MIDI_VISUALIZER_ONLINE_MODE = False
+MIDI_VISUALIZER_MODE = False
 
 
-def render_midi_notes(midi_file: umidiparser.MidiFile, rescale_ratio: float, buffer_for_y: int = 0):
+def _separate_sysex_data(data: bytearray):
+    data_list = []
+
+    byte_array = bytearray([0xF0])
+
+    for value in data:
+        byte_array.append(value)
+
+        if value == 0xF7:
+            data_list.append(byte_array)
+            byte_array = bytearray()
+
+    return data_list
+
+
+def _render_midi_notes(midi_file: umidiparser.MidiFile, rescale_ratio: float, buffer_for_y: int = 0):
     full_duration = 0
 
     for midi_event in midi_file:
@@ -172,6 +187,13 @@ class MidiExamplePlugin(Plugin, ABC):
 
                 self.midi_playback += event_delta_ms
 
+                if midi_event.status == umidiparser.SYSEX:
+                    sysex_datas = _separate_sysex_data(midi_event.data)
+
+                    for sysex_data in sysex_datas:
+                        sysex_bytes = (wintypes.BYTE * len(sysex_data))(*sysex_data)
+                        self.game.controller.midi_sysex_message_immediately(cast_address(get_address(sysex_bytes), wintypes.BYTE), len(sysex_data))
+
                 if midi_event.is_channel():
                     if midi_event.status == umidiparser.NOTE_OFF or (midi_event.status == umidiparser.NOTE_ON and midi_event.velocity == 0):
                         self.game.controller.midi_note_off_immediately(midi_event.channel, midi_event.note, 0)
@@ -181,11 +203,6 @@ class MidiExamplePlugin(Plugin, ABC):
                         self.game.controller.midi_change_program_immediately(midi_event.channel, midi_event.program)
                     elif midi_event.status == umidiparser.CONTROL_CHANGE:
                         self.game.controller.midi_change_control_immediately(midi_event.channel, midi_event.control, midi_event.value)
-                    elif midi_event.status == umidiparser.SYSEX:
-                        sysex_bytes = wintypes.BYTE * len(midi_event.data)
-                        sysex_bytes.from_buffer(midi_event.data)
-
-                        self.game.controller.midi_sysex_message_immediately(cast_address(get_address(sysex_bytes), wintypes.BYTE), len(midi_event.data))
                     elif midi_event.status == umidiparser.PITCHWHEEL:
                         self.game.controller.midi_change_pitch_bend_immediately(midi_event.channel, midi_event.data[0], midi_event.data[1])
 
@@ -208,7 +225,7 @@ class MidiExamplePlugin(Plugin, ABC):
             midi_file = umidiparser.MidiFile(os.path.join(self.directory_path, tokens[1]), reuse_event_object=False)
 
             if MIDI_VISUALIZER_MODE:
-                self.midi_note_image = render_midi_notes(midi_file, MIDI_NOTE_IMAGE_SCALE_RATIO, buffer_for_y=MIDI_NOTE_IMAGE_TIMING_RANGE)
+                self.midi_note_image = _render_midi_notes(midi_file, MIDI_NOTE_IMAGE_SCALE_RATIO, buffer_for_y=MIDI_NOTE_IMAGE_TIMING_RANGE)
             self.midi_events = []
 
             for midi_event in midi_file:
@@ -233,6 +250,13 @@ class MidiExamplePlugin(Plugin, ABC):
 
                     local_midi_playback += event_delta_ms
 
+                    if midi_event.status == umidiparser.SYSEX:
+                        sysex_datas = _separate_sysex_data(midi_event.data)
+
+                        for sysex_data in sysex_datas:
+                            sysex_bytes = (wintypes.BYTE * len(sysex_data))(*sysex_data)
+                            self.game.controller.midi_push_sysex_message(cast_address(get_address(sysex_bytes), wintypes.BYTE), len(sysex_data), int(local_midi_playback))
+
                     if midi_event.is_channel():
                         if midi_event.status == umidiparser.NOTE_OFF or (midi_event.status == umidiparser.NOTE_ON and midi_event.velocity == 0):
                             self.game.controller.midi_push_note_off(midi_event.channel, midi_event.note, 0, int(local_midi_playback))
@@ -242,11 +266,6 @@ class MidiExamplePlugin(Plugin, ABC):
                             self.game.controller.midi_push_change_program(midi_event.channel, midi_event.program, int(local_midi_playback))
                         elif midi_event.status == umidiparser.CONTROL_CHANGE:
                             self.game.controller.midi_push_change_control(midi_event.channel, midi_event.control, midi_event.value, int(local_midi_playback))
-                        elif midi_event.status == umidiparser.SYSEX:
-                            sysex_bytes = wintypes.BYTE * len(midi_event.data)
-                            sysex_bytes.from_buffer(midi_event.data)
-
-                            self.game.controller.midi_push_sysex_message(cast_address(get_address(sysex_bytes), wintypes.BYTE), len(midi_event.data), int(local_midi_playback))
                         elif midi_event.status == umidiparser.PITCHWHEEL:
                             self.game.controller.midi_push_change_pitch_bend(midi_event.channel, midi_event.data[0], midi_event.data[1], int(local_midi_playback))
 
