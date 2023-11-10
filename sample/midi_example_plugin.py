@@ -27,8 +27,8 @@ MIDI_NOTE_IMAGE_BACKGROUND_COLOR = 11
 MIDI_NOTE_IMAGE_CHANNEL_COLORS = [7, 18, 24, 27]
 
 MIDI_NETWORK_MODE = False
-MIDI_VISUALIZER_ONLINE_MODE = False
-MIDI_VISUALIZER_MODE = False
+MIDI_VISUALIZER_ONLINE_MODE = True
+MIDI_VISUALIZER_MODE = True
 
 
 def _separate_sysex_data(data: bytearray):
@@ -147,7 +147,6 @@ class MidiExamplePlugin(Plugin, ABC):
                 changed_dim2_indices = list(changed_indices[1])
                 changed_dim3_indices = list(changed_indices[2])
 
-                self.game.print_line_to_system_dialog(str(changed_count))
                 for changed_index in range(changed_count):
                     note_index = changed_dim1_indices[changed_index]
                     timing_index = changed_dim2_indices[changed_index]

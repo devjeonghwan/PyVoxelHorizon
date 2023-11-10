@@ -42,8 +42,8 @@ flowchart TD
 2. Download `PyVoxelHorizon_{Build Number}.zip` from [releases](https://github.com/devjeonghwan/PyVoxelHorizon/releases) and extract all files to `{VOXEL HORIZON Path}/Plugin/bin/`
 3. Write plugin code and Save into `{VOXEL HORIZON Path}/Plugin/bin/PyVoxelHorizon/plugins`
     - [Basic Plugin](sample/basic_plugin.py)
-    - [MIDI Player Plugin](sample/midi_example_plugin.py)
-    - [Circuit Plugin](sample/circuit_plugin.py)
+    - [MIDI Player Plugin](sample/midi_example_plugin.py) (Required Python Package `numpy`, `umidiparser`)
+    - [Circuit Plugin](sample/circuit_plugin.py) 
 4. Run VOXEL HORIZON
 5. Press the '`' key to open the console
 6. Enter the `load_plugin PyVoxelHorizon_x64_Release.dll` command
