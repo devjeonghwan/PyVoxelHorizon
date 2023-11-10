@@ -1,11 +1,11 @@
 from abc import ABC
 from ctypes import wintypes
 
+from pyvoxelhorizon.enum import *
 from pyvoxelhorizon.interface import *
 from pyvoxelhorizon.plugin.game import *
 from pyvoxelhorizon.plugin.game.voxel import VoxelColor, VOXEL_COLOR_PALETTE
 from pyvoxelhorizon.plugin.game.voxel import VoxelEditor
-from pyvoxelhorizon.enum import *
 from pyvoxelhorizon.struct import *
 
 VOXEL_OBJECT_SIZE = 400
@@ -52,7 +52,7 @@ class VoxelEditorOnline(VoxelEditor, ABC):
         self.input_vector3.y = y
         self.input_vector3.z = z
 
-        return_value = self.game_controller.get_single_voxel_color_with_float_coord(self.output_color_index, self.input_vector3, 8)
+        return_value = self.game_controller.get_single_voxel_color_with_float_coord(self.output_color_index, self.input_vector3)
 
         if return_value == SINGLE_VOXEL_EDIT_RESULT_NO_VOXEL:
             return False
@@ -68,12 +68,12 @@ class VoxelEditorOnline(VoxelEditor, ABC):
         self.input_vector3.z = z
 
         if value:
-            return_value = self.game_controller.set_single_voxel_with_float_coord(self.input_vector3, 8, 0)
+            return_value = self.game_controller.set_single_voxel_with_float_coord(self.input_vector3, 0)
 
             if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
                 raise Exception("Failed to set voxel. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
         else:
-            return_value = self.game_controller.remove_single_voxel_with_float_coord(self.input_vector3, 8)
+            return_value = self.game_controller.remove_single_voxel_with_float_coord(self.input_vector3)
 
             if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
                 raise Exception("Failed to remove voxel. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
@@ -84,12 +84,12 @@ class VoxelEditorOnline(VoxelEditor, ABC):
         self.input_vector3.z = z
 
         if value:
-            return_value = self.game_controller.set_single_voxel_with_float_coord(self.input_vector3, 8, color.index)
+            return_value = self.game_controller.set_single_voxel_with_float_coord(self.input_vector3, color.index)
 
             if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
                 raise Exception("Failed to set voxel. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
         else:
-            return_value = self.game_controller.remove_single_voxel_with_float_coord(self.input_vector3, 8)
+            return_value = self.game_controller.remove_single_voxel_with_float_coord(self.input_vector3)
 
             if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
                 raise Exception("Failed to remove voxel. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
@@ -99,7 +99,7 @@ class VoxelEditorOnline(VoxelEditor, ABC):
         self.input_vector3.y = y
         self.input_vector3.z = z
 
-        return_value = self.game_controller.get_single_voxel_color_with_float_coord(self.output_color_index, self.input_vector3, 8)
+        return_value = self.game_controller.get_single_voxel_color_with_float_coord(self.output_color_index, self.input_vector3)
 
         if return_value == SINGLE_VOXEL_EDIT_RESULT_NO_VOXEL:
             return None
@@ -114,7 +114,7 @@ class VoxelEditorOnline(VoxelEditor, ABC):
         self.input_vector3.y = y
         self.input_vector3.z = z
 
-        return_value = self.game_controller.get_single_voxel_color_with_float_coord(self.output_color_index, self.input_vector3, 8)
+        return_value = self.game_controller.get_single_voxel_color_with_float_coord(self.output_color_index, self.input_vector3)
 
         if return_value == SINGLE_VOXEL_EDIT_RESULT_NO_VOXEL:
             return False
@@ -122,7 +122,7 @@ class VoxelEditorOnline(VoxelEditor, ABC):
         if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
             raise Exception("Failed to get voxel color. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
 
-        return_value = self.game_controller.set_single_voxel_with_float_coord(self.input_vector3, 8, color.index)
+        return_value = self.game_controller.set_single_voxel_with_float_coord(self.input_vector3, color.index)
 
         if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
             raise Exception("Failed to set voxel color. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))

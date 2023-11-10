@@ -455,15 +455,15 @@ def load_functions_of_game_controller(function_table_address: int):
     
     function_address = read_memory(function_table_address + 632, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_SET_SINGLE_VOXEL_WITH_FLOAT_COORD
-    FUNCTION_GAME_CONTROLLER_SET_SINGLE_VOXEL_WITH_FLOAT_COORD = ctypes.WINFUNCTYPE(ctypes.c_int, wintypes.LPVOID, wintypes.LPVOID, wintypes.UINT, wintypes.BYTE)(function_address)
+    FUNCTION_GAME_CONTROLLER_SET_SINGLE_VOXEL_WITH_FLOAT_COORD = ctypes.WINFUNCTYPE(ctypes.c_int, wintypes.LPVOID, wintypes.LPVOID, wintypes.BYTE)(function_address)
     
     function_address = read_memory(function_table_address + 640, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_REMOVE_SINGLE_VOXEL_WITH_FLOAT_COORD
-    FUNCTION_GAME_CONTROLLER_REMOVE_SINGLE_VOXEL_WITH_FLOAT_COORD = ctypes.WINFUNCTYPE(ctypes.c_int, wintypes.LPVOID, wintypes.LPVOID, wintypes.UINT)(function_address)
+    FUNCTION_GAME_CONTROLLER_REMOVE_SINGLE_VOXEL_WITH_FLOAT_COORD = ctypes.WINFUNCTYPE(ctypes.c_int, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
     function_address = read_memory(function_table_address + 648, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_GET_SINGLE_VOXEL_COLOR_WITH_FLOAT_COORD
-    FUNCTION_GAME_CONTROLLER_GET_SINGLE_VOXEL_COLOR_WITH_FLOAT_COORD = ctypes.WINFUNCTYPE(ctypes.c_int, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID, wintypes.UINT)(function_address)
+    FUNCTION_GAME_CONTROLLER_GET_SINGLE_VOXEL_COLOR_WITH_FLOAT_COORD = ctypes.WINFUNCTYPE(ctypes.c_int, wintypes.LPVOID, wintypes.LPVOID, wintypes.LPVOID)(function_address)
     
     function_address = read_memory(function_table_address + 656, ctypes.c_void_p)
     global FUNCTION_GAME_CONTROLLER_BROWSE_WEB
@@ -1018,21 +1018,21 @@ class GameController(AddressObject):
     def enable_auto_restore_all(self, b_switch: bool) -> None:
         return FUNCTION_GAME_CONTROLLER_ENABLE_AUTO_RESTORE_ALL(self.address, b_switch)
     
-    def set_single_voxel_with_float_coord(self, pv3_voxel_pos: Vector3, req_width_depth_height: int, b_color_index: int) -> int:
+    def set_single_voxel_with_float_coord(self, pv3_voxel_pos: Vector3, b_color_index: int) -> int:
         pv3_voxel_pos = get_address(pv3_voxel_pos)
         
-        return FUNCTION_GAME_CONTROLLER_SET_SINGLE_VOXEL_WITH_FLOAT_COORD(self.address, pv3_voxel_pos, req_width_depth_height, b_color_index)
+        return FUNCTION_GAME_CONTROLLER_SET_SINGLE_VOXEL_WITH_FLOAT_COORD(self.address, pv3_voxel_pos, b_color_index)
     
-    def remove_single_voxel_with_float_coord(self, pv3_voxel_pos: Vector3, req_width_depth_height: int) -> int:
+    def remove_single_voxel_with_float_coord(self, pv3_voxel_pos: Vector3) -> int:
         pv3_voxel_pos = get_address(pv3_voxel_pos)
         
-        return FUNCTION_GAME_CONTROLLER_REMOVE_SINGLE_VOXEL_WITH_FLOAT_COORD(self.address, pv3_voxel_pos, req_width_depth_height)
+        return FUNCTION_GAME_CONTROLLER_REMOVE_SINGLE_VOXEL_WITH_FLOAT_COORD(self.address, pv3_voxel_pos)
     
-    def get_single_voxel_color_with_float_coord(self, pb_out_color_index: wintypes.BYTE, pv3_voxel_pos: Vector3, req_width_depth_height: int) -> int:
+    def get_single_voxel_color_with_float_coord(self, pb_out_color_index: wintypes.BYTE, pv3_voxel_pos: Vector3) -> int:
         pb_out_color_index = get_address(pb_out_color_index)
         pv3_voxel_pos = get_address(pv3_voxel_pos)
         
-        return FUNCTION_GAME_CONTROLLER_GET_SINGLE_VOXEL_COLOR_WITH_FLOAT_COORD(self.address, pb_out_color_index, pv3_voxel_pos, req_width_depth_height)
+        return FUNCTION_GAME_CONTROLLER_GET_SINGLE_VOXEL_COLOR_WITH_FLOAT_COORD(self.address, pb_out_color_index, pv3_voxel_pos)
     
     def browse_web(self, sz_url: str, dw_width: int, dw_height: int, b_user_shared_memory: bool) -> int:
         return FUNCTION_GAME_CONTROLLER_BROWSE_WEB(self.address, sz_url, dw_width, dw_height, b_user_shared_memory)
