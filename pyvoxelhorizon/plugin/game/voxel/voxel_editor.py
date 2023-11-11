@@ -45,7 +45,7 @@ class VoxelEditor(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def set_voxel_with_color(self, x: int, y: int, z: int, value: bool, color: VoxelColor):
+    def set_voxel_with_color(self, x: int, y: int, z: int, value: bool, color: VoxelColor = VOXEL_COLOR_PALETTE[0]):
         pass
 
     @abstractmethod
@@ -274,7 +274,7 @@ class VoxelEditorLocal(VoxelEditor, ABC):
 
         voxel_object.set_voxel(x, y, z, value)
 
-    def set_voxel_with_color(self, x: int, y: int, z: int, value: bool, color: VoxelColor):
+    def set_voxel_with_color(self, x: int, y: int, z: int, value: bool, color: VoxelColor = VOXEL_COLOR_PALETTE[0]):
         voxel_object = self._get_voxel_object(x, y, z, True)
 
         x = int((x - self.world_x_min) / VOXEL_OBJECT_8_SIZE) % 8

@@ -176,6 +176,9 @@ class MidiExamplePlugin(Plugin, ABC):
 
         voxel_editor.finish()
 
+        # Re-define playback time for fix not synced midi player
+        midi_new_playback = int((time.time() - self.midi_start_timestamp) * 1000)
+
         if not MIDI_NETWORK_MODE:
             while self.midi_event_index < len(self.midi_events):
                 midi_event = self.midi_events[self.midi_event_index]
@@ -295,6 +298,26 @@ class MidiExamplePlugin(Plugin, ABC):
             if MIDI_NETWORK_MODE:
                 self.game.controller.disable_broadcast_mode_immediately()
                 self.game.controller.midi_reset()
+
+            if MIDI_VISUALIZER_MODE:
+                voxel_editor = VoxelEditorOnline(self.game) if MIDI_VISUALIZER_ONLINE_MODE else VoxelEditorLocal(self.game)
+
+                for note_index in range(MIDI_NOTE_IMAGE_NOTE_RANGE):
+                    for timing_index in range(MIDI_NOTE_IMAGE_TIMING_RANGE):
+                        for depth_index in range(1, 8):
+                            if voxel_editor.get_voxel(
+                                    MIDI_NOTE_IMAGE_DISPLAY_OFFSET_X + (note_index * 50),
+                                    MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + (timing_index * 50),
+                                    MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Z - (depth_index * 50)
+                            ):
+                                voxel_editor.set_voxel_with_color(
+                                    MIDI_NOTE_IMAGE_DISPLAY_OFFSET_X + (note_index * 50),
+                                    MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + (timing_index * 50),
+                                    MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Z - (depth_index * 50),
+                                    False
+                                )
+
+                voxel_editor.finish()
 
             return True
 

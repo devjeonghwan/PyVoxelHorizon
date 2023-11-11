@@ -78,7 +78,7 @@ class VoxelEditorOnline(VoxelEditor, ABC):
             if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
                 raise Exception("Failed to remove voxel. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
 
-    def set_voxel_with_color(self, x: int, y: int, z: int, value: bool, color: VoxelColor):
+    def set_voxel_with_color(self, x: int, y: int, z: int, value: bool, color: VoxelColor = VOXEL_COLOR_PALETTE[0]):
         self.input_vector3.x = x
         self.input_vector3.y = y
         self.input_vector3.z = z
