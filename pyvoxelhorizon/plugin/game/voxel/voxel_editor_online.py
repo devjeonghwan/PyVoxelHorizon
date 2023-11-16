@@ -1,5 +1,6 @@
 from abc import ABC
 from ctypes import wintypes
+from typing import Callable
 
 from pyvoxelhorizon.enum import *
 from pyvoxelhorizon.interface import *
@@ -8,31 +9,43 @@ from pyvoxelhorizon.plugin.game.voxel import VoxelColor, VOXEL_COLOR_PALETTE
 from pyvoxelhorizon.plugin.game.voxel import VoxelEditor
 from pyvoxelhorizon.struct import *
 
-VOXEL_OBJECT_SIZE = 400
-VOXEL_OBJECT_8_SIZE = int(VOXEL_OBJECT_SIZE / 8)
-VOXEL_OBJECT_HALF_SIZE = int(VOXEL_OBJECT_SIZE / 2)
+VOXEL_EDITING_QUEUE = []
+VOXEL_EDITING_VECTOR3 = Vector3()
 
-BIT_SELECTORS = [
-    0b1 << 0,
-    0b1 << 1,
-    0b1 << 2,
-    0b1 << 3,
-    0b1 << 4,
-    0b1 << 5,
-    0b1 << 6,
-    0b1 << 7,
-]
 
-BIT_REVERSE_SELECTORS = [
-    ~(0b1 << 0),
-    ~(0b1 << 1),
-    ~(0b1 << 2),
-    ~(0b1 << 3),
-    ~(0b1 << 4),
-    ~(0b1 << 5),
-    ~(0b1 << 6),
-    ~(0b1 << 7),
-]
+def get_vector(x: float, y: float, z: float):
+    VOXEL_EDITING_VECTOR3.x = x
+    VOXEL_EDITING_VECTOR3.y = y
+    VOXEL_EDITING_VECTOR3.z = z
+
+    return VOXEL_EDITING_VECTOR3
+
+
+def append_editing_queue(editing_func: Callable):
+    VOXEL_EDITING_QUEUE.append(editing_func)
+
+
+def process_editing_queue():
+    while True:
+        if len(VOXEL_EDITING_QUEUE) <= 0:
+            return SINGLE_VOXEL_EDIT_RESULT_OK
+
+        editing_func = VOXEL_EDITING_QUEUE[0]
+
+        return_value = editing_func()
+
+        if return_value == SINGLE_VOXEL_EDIT_RESULT_BUFFER_NOT_ENOUGH:
+            return SINGLE_VOXEL_EDIT_RESULT_OK
+        else:
+            VOXEL_EDITING_QUEUE.pop(0)
+
+        if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
+            return return_value
+
+
+def cancel_all_editing_queue(game: Game):
+    VOXEL_EDITING_QUEUE.clear()
+    game.controller.cancel_all_pending_voxel_edit_event()
 
 
 class VoxelEditorOnline(VoxelEditor, ABC):
@@ -63,36 +76,26 @@ class VoxelEditorOnline(VoxelEditor, ABC):
         return True
 
     def set_voxel(self, x: int, y: int, z: int, value: bool):
-        self.input_vector3.x = x
-        self.input_vector3.y = y
-        self.input_vector3.z = z
-
         if value:
-            return_value = self.game_controller.set_single_voxel_with_float_coord(self.input_vector3, 0)
-
-            if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
-                raise Exception("Failed to set voxel. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
+            append_editing_queue(lambda: self.game_controller.set_single_voxel_with_float_coord(get_vector(x, y, z), 0))
         else:
-            return_value = self.game_controller.remove_single_voxel_with_float_coord(self.input_vector3)
+            append_editing_queue(lambda: self.game_controller.remove_single_voxel_with_float_coord(get_vector(x, y, z)))
 
-            if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
-                raise Exception("Failed to remove voxel. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
+        return_value = process_editing_queue()
+
+        if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
+            raise Exception("Failed to editing voxel. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
 
     def set_voxel_with_color(self, x: int, y: int, z: int, value: bool, color: VoxelColor = VOXEL_COLOR_PALETTE[0]):
-        self.input_vector3.x = x
-        self.input_vector3.y = y
-        self.input_vector3.z = z
-
         if value:
-            return_value = self.game_controller.set_single_voxel_with_float_coord(self.input_vector3, color.index)
-
-            if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
-                raise Exception("Failed to set voxel. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
+            append_editing_queue(lambda: self.game_controller.set_single_voxel_with_float_coord(get_vector(x, y, z), color.index))
         else:
-            return_value = self.game_controller.remove_single_voxel_with_float_coord(self.input_vector3)
+            append_editing_queue(lambda: self.game_controller.remove_single_voxel_with_float_coord(get_vector(x, y, z)))
 
-            if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
-                raise Exception("Failed to remove voxel. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
+        return_value = process_editing_queue()
+
+        if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
+            raise Exception("Failed to editing voxel. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
 
     def get_voxel_color(self, x: int, y: int, z: int) -> VoxelColor | None:
         self.input_vector3.x = x
@@ -122,10 +125,12 @@ class VoxelEditorOnline(VoxelEditor, ABC):
         if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
             raise Exception("Failed to get voxel color. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
 
-        return_value = self.game_controller.set_single_voxel_with_float_coord(self.input_vector3, color.index)
+        append_editing_queue(lambda: self.game_controller.set_single_voxel_with_float_coord(get_vector(x, y, z), color.index))
+
+        return_value = process_editing_queue()
 
         if return_value != SINGLE_VOXEL_EDIT_RESULT_OK:
-            raise Exception("Failed to set voxel color. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
+            raise Exception("Failed to editing voxel. returned `{0}`.".format(get_single_voxel_edit_result_string(return_value)))
 
         return True
 

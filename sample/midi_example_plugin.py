@@ -10,6 +10,7 @@ import umidiparser
 
 from pyvoxelhorizon.plugin import Plugin
 from pyvoxelhorizon.plugin.game.voxel import *
+from pyvoxelhorizon.plugin.game.voxel.voxel_editor_online import cancel_all_editing_queue, wait_for_editing_queue
 from pyvoxelhorizon.plugin.type import *
 from pyvoxelhorizon.util.address_object import *
 
@@ -300,11 +301,14 @@ class MidiExamplePlugin(Plugin, ABC):
                 self.game.controller.midi_reset()
 
             if MIDI_VISUALIZER_MODE:
+                if MIDI_VISUALIZER_ONLINE_MODE:
+                    cancel_all_editing_queue(self.game)
+
                 voxel_editor = VoxelEditorOnline(self.game) if MIDI_VISUALIZER_ONLINE_MODE else VoxelEditorLocal(self.game)
 
                 for note_index in range(MIDI_NOTE_IMAGE_NOTE_RANGE):
                     for timing_index in range(MIDI_NOTE_IMAGE_TIMING_RANGE):
-                        for depth_index in range(1, 8):
+                        for depth_index in range(0, 8):
                             if voxel_editor.get_voxel(
                                     MIDI_NOTE_IMAGE_DISPLAY_OFFSET_X + (note_index * 50),
                                     MIDI_NOTE_IMAGE_DISPLAY_OFFSET_Y + (timing_index * 50),
@@ -318,6 +322,9 @@ class MidiExamplePlugin(Plugin, ABC):
                                 )
 
                 voxel_editor.finish()
+
+                if MIDI_VISUALIZER_ONLINE_MODE:
+                    wait_for_editing_queue()
 
             return True
 
