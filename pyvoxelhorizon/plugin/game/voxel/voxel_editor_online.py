@@ -43,6 +43,14 @@ def process_editing_queue():
             return return_value
 
 
+def wait_for_editing_queue():
+    while True:
+        if len(VOXEL_EDITING_QUEUE) <= 0:
+            return
+
+        process_editing_queue()
+
+
 def cancel_all_editing_queue(game: Game):
     VOXEL_EDITING_QUEUE.clear()
     game.controller.cancel_all_pending_voxel_edit_event()
