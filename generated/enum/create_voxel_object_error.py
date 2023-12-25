@@ -1,3 +1,8 @@
+import ctypes
+import ctypes.wintypes as wintypes
+
+from pyvoxelhorizon.util import *
+
 CREATE_VOXEL_OBJECT_ERROR_OK = 0
 CREATE_VOXEL_OBJECT_ERROR_ALREADY_EXIST = 1
 CREATE_VOXEL_OBJECT_ERROR_INVALID_POS = 2

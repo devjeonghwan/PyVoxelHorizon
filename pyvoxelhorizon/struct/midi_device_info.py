@@ -1,6 +1,8 @@
 import ctypes
 import ctypes.wintypes as wintypes
 
+from pyvoxelhorizon.util import *
+from pyvoxelhorizon.enum import *
 
 class MIDI_DEVICE_INFO(ctypes.Structure):
     _fields_ = (

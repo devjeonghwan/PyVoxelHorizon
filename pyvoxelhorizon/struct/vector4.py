@@ -1,5 +1,8 @@
 import ctypes
+import ctypes.wintypes as wintypes
 
+from pyvoxelhorizon.util import *
+from pyvoxelhorizon.enum import *
 
 class Vector4(ctypes.Structure):
     _fields_ = (

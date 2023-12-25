@@ -1,3 +1,8 @@
+import ctypes
+import ctypes.wintypes as wintypes
+
+from pyvoxelhorizon.util import *
+
 SINGLE_VOXEL_EDIT_RESULT_OK = 0
 SINGLE_VOXEL_EDIT_RESULT_INVALID_POSITION = 1
 SINGLE_VOXEL_EDIT_RESULT_BUFFER_NOT_ENOUGH = 2

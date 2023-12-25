@@ -1,19 +1,20 @@
 import ctypes
 import ctypes.wintypes as wintypes
 
-from pyvoxelhorizon.interface.voxel_object_lite import VoxelObjectLite
-from pyvoxelhorizon.struct.aabb import AABB
-from pyvoxelhorizon.struct.bounding_sphere import BoundingSphere
-from pyvoxelhorizon.struct.int_vector3 import IntVector3
-from pyvoxelhorizon.struct.int_vector4 import IntVector4
-from pyvoxelhorizon.struct.midi_device_info import MIDI_DEVICE_INFO
-from pyvoxelhorizon.struct.plane import Plane
-from pyvoxelhorizon.struct.rect import Rect
-from pyvoxelhorizon.struct.triangle import Triangle
-from pyvoxelhorizon.struct.vector3 import Vector3
-from pyvoxelhorizon.struct.vertex_quad import VertexQuad
-from pyvoxelhorizon.struct.voxel_description_lite import VoxelDescriptionLite
 from pyvoxelhorizon.util import *
+from pyvoxelhorizon.enum import *
+from pyvoxelhorizon.struct.aabb import AABB
+from pyvoxelhorizon.interface.voxel_object_lite import VoxelObjectLite
+from pyvoxelhorizon.struct.vector3 import Vector3
+from pyvoxelhorizon.struct.int_vector3 import IntVector3
+from pyvoxelhorizon.struct.bounding_sphere import BoundingSphere
+from pyvoxelhorizon.struct.voxel_description_lite import VoxelDescriptionLite
+from pyvoxelhorizon.struct.triangle import Triangle
+from pyvoxelhorizon.struct.rect import Rect
+from pyvoxelhorizon.struct.plane import Plane
+from pyvoxelhorizon.struct.int_vector4 import IntVector4
+from pyvoxelhorizon.struct.vertex_quad import VertexQuad
+from pyvoxelhorizon.struct.midi_device_info import MIDI_DEVICE_INFO
 
 IS_FUNCTIONS_LOADED = False
 
